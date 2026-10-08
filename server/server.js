@@ -6,12 +6,13 @@ app.use(express.json());
 
 app.get('/',(req , res) => {
     res.json({
-        message: "Queueless API is running"
+        message : 'Welcome to QueueLess'
     });
 })
 
 const PORT = 5000;
 
 app.listen(PORT , () => {
-    console.log(`Server is running on Port No : ${PORT}`);
+    console.log(`Server is running on PORT No : ${PORT}`);
 });
+
