@@ -73,7 +73,7 @@ function Register() {
         "w-full h-9 border border-[#ccc] rounded px-3 pr-9 text-sm outline-none focus:border-blue-400";
 
     return (
-        <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center px-3 py-4">
+        <div className="h-[calc(100vh-60px)] bg-[#f5f5f5] flex items-center justify-center px-3 py-4">
             <div className="w-[320px] max-w-[95%] bg-white p-5 rounded-lg">
 
                 <div className="text-center">
