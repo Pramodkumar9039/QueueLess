@@ -11,7 +11,7 @@ const Navbar = () => {
     }
 
     return (
-        <nav className='flex items-center justify-between bg-white px-6 py-4 shadow'>
+        <nav className='flex items-center justify-between bg-white px-4 py-2 shadow'>
             <Link to='/' className='text-xl font-bold text-blue-700'>
                 QueueLess    
             </Link>
