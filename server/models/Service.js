@@ -20,7 +20,7 @@ const serviceSchema = new mongoose.Schema(
             min: 1,
         },
 
-        Organization: {
+        organization: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Organization",
             required: true,

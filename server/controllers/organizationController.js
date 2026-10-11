@@ -3,7 +3,7 @@ const Organization = require('../models/Organization.js');
 // Create a new Organization 
 const createOrganization = async (req , res) => {
     try{
-        const { name , type , address , descripton } = req.body;
+        const { name , type , address , description } = req.body;
 
         if(!name || !type || !address){
             return res.status(400).json({

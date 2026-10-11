@@ -3,9 +3,11 @@ require('dotenv').config();
 const express = require('express');
 const connectDB = require('./config/db.js');
 const userRoutes = require('./routes/userRoutes.js');
-const authRoutes = require('./routes/authRoutes.js');
 const cors = require('cors');
-const organizationRoutes = require('./routes/organizationRoutes.js')
+const authRoutes = require('./routes/authRoutes');
+const organizationRoutes = require('./routes/organizationRoutes')
+const serviceRoutes = require('./routes/serviceRoutes');
+const queueRoutes = require("./routes/queueRoutes");
 
 const app = express();
 
@@ -16,6 +18,9 @@ app.use(cors({
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/organizations", organizationRoutes);
+app.use("/api/services", serviceRoutes);
+app.use("/api/queues", queueRoutes);
 
 app.get('/', (req, res) => {
     res.json({
