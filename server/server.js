@@ -5,6 +5,7 @@ const connectDB = require('./config/db.js');
 const userRoutes = require('./routes/userRoutes.js');
 const authRoutes = require('./routes/authRoutes.js');
 const cors = require('cors');
+const organizationRoutes = require('./routes/organizationRoutes.js')
 
 const app = express();
 
