@@ -8,6 +8,7 @@ const authRoutes = require('./routes/authRoutes');
 const organizationRoutes = require('./routes/organizationRoutes')
 const serviceRoutes = require('./routes/serviceRoutes');
 const queueRoutes = require("./routes/queueRoutes");
+const tokenRoutes = require("./routes/tokenRoutes");
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/organizations", organizationRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/queues", queueRoutes);
+app.use("/api/tokens", tokenRoutes);
 
 app.get('/', (req, res) => {
     res.json({
