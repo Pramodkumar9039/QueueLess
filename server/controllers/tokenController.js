@@ -153,4 +153,118 @@ const getMyTokenStatus = async (req , res) => {
     }
 }
 
-module.exports = { createToken, getMyTokenStatus };
+const callNextCustomer = async (req , res) =>{
+    try{
+        const {queueId} = req.params;
+
+        if(!mongoose.Types.ObjectId.isValid(queueId)){
+            return res.status(400).json({
+                message: "Invalid queue ID",
+            })
+        }
+
+        const queue = await Queue.findById(queueId);
+
+        if(!queue){
+            return res.status(404).json({
+                message: "Queue not found",
+            })
+        }
+
+        if(queue.status !== 'open'){
+            return res.status(400).json({
+                message: "Queue is not open",
+            })
+        }
+
+        // only call the next customer if nobody is currently being served 
+        const currentToken = await Token.findOne({
+            queue: queue._id,
+            status: "serving",
+        })
+
+        if(currentToken){
+            return res.status(409).json({
+                message: "Complete the current token before calling the next customer",
+                token: currentToken,
+            })
+        }
+
+        // find the earliest waiting token
+        const nextToken = await Token.findOneAndUpdate({
+            queue:queue._id,
+            status: "waiting",
+        },
+        {
+            $set: {status: "serving"},
+        },
+        {
+            sort: {tokenNumber: 1},
+            returnDocument:"after",
+        }
+    );
+
+    if(!nextToken){
+        return res.status(404).json({
+            message: "No waiting customers in this queue",
+        })
+    }
+
+    return res.status(200).json({
+        message: "Next customer called successfully",
+        token: nextToken,
+    });
+    }catch(error){
+        console.error("Call next customer error:",error);
+
+        return res.status(500).json({
+            message: "Unable to call next customer",
+        })
+    }
+}
+
+const completeToken = async () => {
+    try{
+        const {tokenId} = req.params;
+
+        if(!mongoose.Types.ObjectId.isValid(tokenId)){
+            return res.status(400).json({
+                message:"Invalid token ID",
+            })
+        }
+
+        // Only complete a token that is currently being served 
+        const token = await Token.findOneAndUpdate(
+            {
+                _id:tokenId,
+                status:"serving",
+            },
+            {
+                $set: {status: "completed"},
+            },
+            {
+                returnDocument: "after",
+            }
+        );
+
+        if(!token){
+            return res.status(404).json({
+                message:"Serving token not found",
+            })
+        }
+
+        return res.status(200).json({
+            message:"Token completed successfully",
+            token,
+        })
+    }
+    catch(error){
+        console.error("Complete token error:",error);
+
+        return res.status(500).json({
+            message: "Unable to complete token",
+        })
+    }
+}
+
+module.exports = { createToken, getMyTokenStatus , callNextCustomer , completeToken};
