@@ -223,7 +223,7 @@ const callNextCustomer = async (req , res) =>{
     }
 }
 
-const completeToken = async () => {
+const completeToken = async (req , res) => {
     try{
         const {tokenId} = req.params;
 
