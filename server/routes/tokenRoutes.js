@@ -2,11 +2,13 @@ const express = require("express");
 const router = express.Router();
 
 const authMiddleware = require("../middleware/authMiddleware");
-const { createToken , getMyTokenStatus, callNextCustomer , completeToken } = require("../controllers/tokenController");
+const { createToken , getMyTokenStatus , getMyActiveToken , callNextCustomer , completeToken } = require("../controllers/tokenController");
 const staffMiddleware = require("../middleware/staffMiddleware");
 
 // Only logged-in users can create tokens
 router.post("/", authMiddleware, createToken);
+
+router.get("/queue/:queueId/my-active", authMiddleware, getMyActiveToken);
 
 //get the logged-in customer's token status
 router.get('/:tokenId/status',authMiddleware,getMyTokenStatus);

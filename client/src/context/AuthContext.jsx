@@ -1,66 +1,94 @@
-import { createContext, useContext, useState } from 'react';
-import api from '../api/axios'
+
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+} from "react";
+import api from "../api/axios";
 
 const AuthContext = createContext(null);
 
-export const AuthProvider = ({children}) => {
-    const [user , setUser] = useState(null);
-    const [token , setToken] = useState(null);
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user")) || null;
+    } catch {
+      return null;
+    }
+  });
 
-    // login function 
-    const login = async (email , password) => {
-        const response = await api.post("/auth/login",{
-            email,
-            password,
-        });
+  const [token, setToken] = useState(
+    () => localStorage.getItem("token") || null
+  );
 
-        const receivedToken = response.data.token;
-        const receivedUser = response.data.user;
+  // Restore the JWT for Axios requests after a page refresh.
+  useEffect(() => {
+    if (token) {
+      api.defaults.headers.common.Authorization = `Bearer ${token}`;
+    } else {
+      delete api.defaults.headers.common.Authorization;
+    }
+  }, [token]);
 
-        if(!receivedToken){
-            throw new Error("Login response did not contain a token");
-        }
+  // Login
+  const login = async (email, password) => {
+    const response = await api.post("/auth/login", {
+      email,
+      password,
+    });
 
-        setToken(receivedToken);
-        setUser(receivedUser);
+    const receivedToken = response.data.token;
+    const receivedUser = response.data.user;
 
-        // Add JWT to future axios requests
-        api.defaults.headers.common.Authorization = `Bearer ${receivedToken}`;
+    if (!receivedToken) {
+      throw new Error("Login response did not contain a token");
+    }
 
-        return receivedUser
-    };
+    localStorage.setItem("token", receivedToken);
+    localStorage.setItem("user", JSON.stringify(receivedUser));
 
-    // logout function 
-    const logout = () => {
-        setUser(null);
-        setToken(null);
+    api.defaults.headers.common.Authorization =
+      `Bearer ${receivedToken}`;
 
-        // remove JWT from future axios requests
-        delete api.defaults.headers.common.Authorization;
-    };
+    setToken(receivedToken);
+    setUser(receivedUser);
 
-    // values shared with other components 
-    const value = {
-        user,
-        token,
-        isAuthenticated: Boolean(token),
-        login,
-        logout,
-    };
+    return receivedUser;
+  };
 
-    return (
-        <AuthContext.Provider value={value}>
-            {children}
-        </AuthContext.Provider>
-    );
+  // Logout
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    delete api.defaults.headers.common.Authorization;
+
+    setToken(null);
+    setUser(null);
+  };
+
+  const value = {
+    user,
+    token,
+    isAuthenticated: Boolean(token),
+    login,
+    logout,
+  };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {
-    const context = useContext(AuthContext);
+  const context = useContext(AuthContext);
 
-    if(!context){
-        throw new Error("useAuth must be used inside AuthProvider");
-    }
+  if (!context) {
+    throw new Error("useAuth must be used inside AuthProvider");
+  }
 
-    return context;
-}
+  return context;
+};
