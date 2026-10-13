@@ -1,24 +1,68 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation, Navigate } from "react-router-dom";
+import api from "../api/axios";
 
 const QueueSuccess = () => {
   const location = useLocation();
+  const { token: initialToken, service, organization } =
+    location.state || {};
 
-  const { token, service, organization } = location.state || {};
+  const [token, setToken] = useState(initialToken || null);
+  const [peopleAhead, setPeopleAhead] = useState(null);
+  const [estimatedWait, setEstimatedWait] = useState(null);
 
-  if (!token || !service || !organization) {
+  useEffect(() => {
+    if (!initialToken?._id) return;
+
+    let active = true;
+
+    const fetchStatus = async () => {
+      try {
+        const response = await api.get(
+          `/tokens/${initialToken._id}/status`
+        );
+
+        if (!active) return;
+
+        const data = response.data;
+
+        setToken((previous) => ({
+          ...previous,
+          ...data.token,
+          _id: data.token?.id || previous?._id,
+        }));
+
+        setPeopleAhead(data.peopleAhead ?? 0);
+        setEstimatedWait(data.estimatedWaitingMinutes ?? 0);
+      } catch (error) {
+        console.error("Unable to refresh token status:", error);
+      }
+    };
+
+    fetchStatus();
+
+    const intervalId = setInterval(fetchStatus, 10000);
+
+    return () => {
+      active = false;
+      clearInterval(intervalId);
+    };
+  }, [initialToken?._id]);
+
+  if (!initialToken || !service || !organization) {
     return <Navigate to="/" replace />;
   }
 
-  const tokenNumber = token.tokenNumber ?? "—";
+  // Queue position is people ahead + the customer's own position.
+  const queuePosition =
+    peopleAhead === null ? "—" : peopleAhead + 1;
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#F0F7FE] via-[#E7F2FC] to-[#DCECFB] px-4 py-8 flex items-center justify-center">
       <div className="w-full max-w-md">
         <section className="rounded-2xl border border-[#E5EEF8] bg-white/70 p-3 shadow-[0_12px_35px_rgba(44,78,115,0.10)]">
           <div className="rounded-xl bg-white p-4 sm:p-5">
-            {/* Close button */}
             <div className="flex justify-end">
               <Link
                 to={`/organizations/${organization._id}`}
@@ -29,7 +73,6 @@ const QueueSuccess = () => {
               </Link>
             </div>
 
-            {/* Success icon */}
             <div className="flex flex-col items-center text-center">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#43B85B] text-3xl font-semibold text-white shadow-sm">
                 ✓
@@ -40,18 +83,16 @@ const QueueSuccess = () => {
               </h1>
             </div>
 
-            {/* Token number */}
             <div className="mt-4 rounded-xl bg-[#EAF3FF] px-4 py-3 text-center">
               <p className="text-xs font-medium text-[#526B91]">
                 Token Number
               </p>
 
               <p className="mt-1 text-3xl font-extrabold leading-none text-[#101B35]">
-                {tokenNumber}
+                {token?.tokenNumber ?? initialToken.tokenNumber}
               </p>
             </div>
 
-            {/* Queue position and waiting time */}
             <div className="mt-4 grid grid-cols-2">
               <div className="border-r border-[#E7EDF5] px-2 py-1">
                 <div className="flex items-center justify-center gap-2 text-xs text-[#526B91]">
@@ -60,7 +101,7 @@ const QueueSuccess = () => {
                 </div>
 
                 <p className="mt-1 text-center text-base font-bold text-[#101B35]">
-                  —
+                  {queuePosition}
                 </p>
               </div>
 
@@ -71,16 +112,17 @@ const QueueSuccess = () => {
                 </div>
 
                 <p className="mt-1 text-center text-base font-bold text-[#101B35]">
-                  ~{service.estimatedDuration || 20} minutes
+                  {estimatedWait === null
+                    ? "Calculating..."
+                    : `~${estimatedWait} minutes`}
                 </p>
               </div>
             </div>
 
-            {/* Live status button */}
             <Link
               to="/dashboard"
               state={{
-                token,
+                token: initialToken,
                 service,
                 organization,
               }}

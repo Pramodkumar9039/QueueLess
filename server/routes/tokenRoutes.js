@@ -1,22 +1,57 @@
+
 const express = require("express");
 const router = express.Router();
 
 const authMiddleware = require("../middleware/authMiddleware");
-const { createToken , getMyTokenStatus , getMyActiveToken , callNextCustomer , completeToken } = require("../controllers/tokenController");
 const staffMiddleware = require("../middleware/staffMiddleware");
 
-// Only logged-in users can create tokens
+const {
+  createToken,
+  getMyTokenStatus,
+  getMyActiveToken,
+  getQueueTokens,
+  callNextCustomer,
+  completeToken,
+} = require("../controllers/tokenController");
+
+// Create a token for the logged-in customer
 router.post("/", authMiddleware, createToken);
 
-router.get("/queue/:queueId/my-active", authMiddleware, getMyActiveToken);
+// Get the current customer's active token in a queue
+router.get(
+  "/queue/:queueId/my-active",
+  authMiddleware,
+  getMyActiveToken
+);
 
-//get the logged-in customer's token status
-router.get('/:tokenId/status',authMiddleware,getMyTokenStatus);
+// Get all tokens for a queue
+router.get(
+  "/queue/:queueId/tokens",
+  authMiddleware,
+  getQueueTokens
+);
 
-// Staff: call the next waiting customer 
-router.post("/queue/:queueId/call-next",authMiddleware,staffMiddleware,callNextCustomer);
+// Staff: call the next waiting customer
+router.post(
+  "/queue/:queueId/call-next",
+  authMiddleware,
+  staffMiddleware,
+  callNextCustomer
+);
 
+// Get the logged-in customer's token status
+router.get(
+  "/:tokenId/status",
+  authMiddleware,
+  getMyTokenStatus
+);
 
-router.patch("/:tokenId/complete", authMiddleware, staffMiddleware , completeToken);
+// Staff: complete a serving token
+router.patch(
+  "/:tokenId/complete",
+  authMiddleware,
+  staffMiddleware,
+  completeToken
+);
 
 module.exports = router;

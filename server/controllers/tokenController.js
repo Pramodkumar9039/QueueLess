@@ -310,10 +310,35 @@ const completeToken = async (req, res) => {
   }
 };
 
+
+const getQueueTokens = async (req, res) => {
+  try {
+    const { queueId } = req.params;
+
+    const tokens = await Token.find({ queue: queueId })
+      .populate("customer", "name")
+      .select("tokenNumber status joinedAt createdAt customer queue")
+      .sort({ tokenNumber: 1 })
+      .lean();
+
+    return res.status(200).json({
+      message: "Queue tokens fetched successfully",
+      tokens,
+    });
+  } catch (error) {
+    console.error("Get queue tokens error:", error);
+
+    return res.status(500).json({
+      message: "Unable to fetch queue tokens",
+    });
+  }
+};
+
 module.exports = {
   createToken,
   getMyActiveToken,
   getMyTokenStatus,
   callNextCustomer,
   completeToken,
+  getQueueTokens,
 };
