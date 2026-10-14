@@ -1,9 +1,23 @@
 const express = require("express");
 const router = express.Router();
 
-const { getOrCreateQueue } = require("../controllers/queueController");
+const authMiddleware = require("../middleware/authMiddleware");
+const staffMiddleware = require("../middleware/staffMiddleware");
 
-// get or create a queue for a service
+const {
+  getOrCreateQueue,
+  updateQueueStatus,
+} = require("../controllers/queueController");
+
+// Get or create a queue for a service
 router.get("/service/:serviceId", getOrCreateQueue);
+
+// Pause or resume today's queue — staff only
+router.patch(
+  "/service/:serviceId/status",
+  authMiddleware,
+  staffMiddleware,
+  updateQueueStatus
+);
 
 module.exports = router;

@@ -24,7 +24,6 @@ const StaffDashboard = () => {
     serviceIdRef.current = serviceId;
   }, [serviceId]);
 
-  // Normalize API responses that contain tokens in different shapes.
   const normalizeTokens = (data) => {
     const list = Array.isArray(data)
       ? data
@@ -36,12 +35,10 @@ const StaffDashboard = () => {
     }));
   };
 
-  // Load organizations
   const loadOrganizations = useCallback(async () => {
     try {
       const response = await api.get("/organizations");
       const data = response.data.organizations || response.data;
-
       setOrganizations(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(
@@ -56,7 +53,6 @@ const StaffDashboard = () => {
     loadOrganizations();
   }, [loadOrganizations]);
 
-  // Load services for the selected organization
   useEffect(() => {
     let cancelled = false;
 
@@ -71,7 +67,6 @@ const StaffDashboard = () => {
 
       try {
         setError("");
-
         const response = await api.get(
           `/services/organization/${organizationId}`
         );
@@ -98,8 +93,6 @@ const StaffDashboard = () => {
     };
   }, [organizationId]);
 
-  // Load the selected service's queue and tokens.
-  // Manual refreshes are not skipped just because polling is running.
   const loadQueue = useCallback(async (silent = false) => {
     const selectedServiceId = serviceIdRef.current;
 
@@ -123,7 +116,8 @@ const StaffDashboard = () => {
       );
 
       const queueData =
-        queueResponse.data.queue || queueResponse.data.data?.queue ||
+        queueResponse.data.queue ||
+        queueResponse.data.data?.queue ||
         queueResponse.data;
 
       if (!queueData?._id && !queueData?.id) {
@@ -151,27 +145,24 @@ const StaffDashboard = () => {
         return;
       }
 
-      const latestTokens = normalizeTokens(tokenResponse.data);
-      setTokens(latestTokens);
+      setTokens(normalizeTokens(tokenResponse.data));
     } catch (err) {
       if (
         serviceIdRef.current === selectedServiceId &&
-        requestId === latestRequest.current
+        requestId === latestRequest.current &&
+        !silent
       ) {
-        if (!silent) {
-          setError(
-            err.response?.data?.message ||
-              err.message ||
-              "Unable to load queue tokens."
-          );
-        }
+        setError(
+          err.response?.data?.message ||
+            err.message ||
+            "Unable to load queue tokens."
+        );
       }
     } finally {
       if (silent) refreshInProgress.current = false;
     }
   }, []);
 
-  // Load immediately when the service changes
   useEffect(() => {
     if (!serviceId) {
       latestRequest.current++;
@@ -185,7 +176,6 @@ const StaffDashboard = () => {
     loadQueue();
   }, [serviceId, loadQueue]);
 
-  // Poll every 5 seconds
   useEffect(() => {
     if (!serviceId) return undefined;
 
@@ -196,12 +186,30 @@ const StaffDashboard = () => {
     return () => clearInterval(intervalId);
   }, [serviceId, loadQueue]);
 
-  // Call the next customer
+  const current = tokens.find((item) => item.status === "serving");
+
+  const waiting = tokens
+    .filter((item) => item.status === "waiting")
+    .sort((a, b) => Number(a.tokenNumber) - Number(b.tokenNumber));
+
+  const serving = tokens.filter((item) => item.status === "serving");
+
+  const completed = tokens
+    .filter((item) => item.status === "completed")
+    .sort((a, b) => Number(b.tokenNumber) - Number(a.tokenNumber));
+
+  const next = waiting[0];
+
   const callNext = async () => {
     const queueId = queue?._id || queue?.id;
 
     if (!queueId) {
       setError("Select an organization and service first.");
+      return;
+    }
+
+    if (queue.status !== "open") {
+      setError("Resume the queue before calling the next customer.");
       return;
     }
 
@@ -243,7 +251,6 @@ const StaffDashboard = () => {
     }
   };
 
-  // Complete the current customer
   const completeCustomer = async () => {
     const servingToken = tokens.find(
       (item) => item.status === "serving"
@@ -260,9 +267,7 @@ const StaffDashboard = () => {
       setNotice("");
 
       const tokenId = servingToken._id || servingToken.id;
-
       await api.patch(`/tokens/${tokenId}/complete`);
-
       await loadQueue();
 
       setNotice(`Token #${servingToken.tokenNumber} has been completed.`);
@@ -276,19 +281,48 @@ const StaffDashboard = () => {
     }
   };
 
-  const current = tokens.find((item) => item.status === "serving");
+  // Pause or resume the selected queue.
+  const toggleQueueStatus = async () => {
+    if (!serviceId || !queue) {
+      setError("Select an organization and service first.");
+      return;
+    }
 
-  const waiting = tokens
-    .filter((item) => item.status === "waiting")
-    .sort((a, b) => Number(a.tokenNumber) - Number(b.tokenNumber));
+    if (queue.status === "closed") {
+      setError("This queue is closed and cannot be resumed.");
+      return;
+    }
 
-  const serving = tokens.filter((item) => item.status === "serving");
+    const newStatus =
+      queue.status === "paused" ? "open" : "paused";
 
-  const completed = tokens
-    .filter((item) => item.status === "completed")
-    .sort((a, b) => Number(b.tokenNumber) - Number(a.tokenNumber));
+    try {
+      setBusy(true);
+      setError("");
+      setNotice("");
 
-  const next = waiting[0];
+      const response = await api.patch(
+        `/queues/service/${serviceId}/status`,
+        { status: newStatus }
+      );
+
+      await loadQueue();
+
+      setNotice(
+        response.data.message ||
+          (newStatus === "paused"
+            ? "Queue paused successfully."
+            : "Queue resumed successfully.")
+      );
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          "Unable to update queue status."
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const visibleTokens =
     activeTab === "waiting"
@@ -298,9 +332,7 @@ const StaffDashboard = () => {
         : completed;
 
   const tokenLabel = (token) =>
-    token
-      ? `A${String(token.tokenNumber).padStart(2, "0")}`
-      : "—";
+    token ? `A${String(token.tokenNumber).padStart(2, "0")}` : "—";
 
   const formatTime = (date) =>
     date
@@ -334,7 +366,6 @@ const StaffDashboard = () => {
   return (
     <main className="min-h-screen bg-[#EAF3FB] px-3 pb-6 pt-3 sm:px-5">
       <div className="mx-auto max-w-[1440px]">
-        {/* Dashboard header */}
         <header className="mb-4 flex items-center justify-between">
           <h1 className="text-lg font-bold tracking-tight text-[#101D3A] sm:text-xl">
             Staff Dashboard
@@ -402,7 +433,6 @@ const StaffDashboard = () => {
           </div>
         </section>
 
-        {/* Error and success messages */}
         {error && (
           <div className="mb-3 rounded-lg bg-red-50 px-3 py-2.5 text-xs text-red-700">
             {error}
@@ -458,7 +488,13 @@ const StaffDashboard = () => {
             <button
               type="button"
               onClick={callNext}
-              disabled={busy || !queue || Boolean(current) || !next}
+              disabled={
+                busy ||
+                !queue ||
+                queue.status !== "open" ||
+                Boolean(current) ||
+                !next
+              }
               className="mt-3 w-full cursor-pointer rounded-lg bg-[#C9DDFB] py-2.5 text-xs font-semibold text-[#174E9C] transition hover:bg-[#B8D1F8] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {busy ? "Please wait..." : "Call Next"}
@@ -511,21 +547,30 @@ const StaffDashboard = () => {
                     className="transition hover:bg-[#F8FBFF]"
                   >
                     <td className="px-3 py-3">{index + 1}</td>
+
                     <td className="px-3 py-3 font-bold">
                       {tokenLabel(item)}
                     </td>
+
                     <td className="px-3 py-3">
                       {item.customer?.name || "Customer"}
                     </td>
+
                     <td className="px-3 py-3">
                       {formatTime(item.joinedAt || item.createdAt)}
                     </td>
+
                     <td className="px-3 py-3">{waitTime(item)}</td>
+
                     <td className="px-3 py-3 text-right">
                       {item.status === "waiting" ? (
                         <button
                           type="button"
-                          disabled={busy || Boolean(current)}
+                          disabled={
+                            busy ||
+                            Boolean(current) ||
+                            queue?.status !== "open"
+                          }
                           onClick={callNext}
                           className="cursor-pointer rounded-md bg-[#1768F2] px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-[#1256CF] disabled:cursor-not-allowed disabled:opacity-50"
                         >
@@ -560,20 +605,56 @@ const StaffDashboard = () => {
             </table>
           </div>
 
-          {/* Queue footer */}
-          <div className="flex items-center justify-between border-t border-[#EDF1F7] px-3 py-3">
-            <span className="text-[11px] text-[#8A98AD]">
-              {queue ? `Queue: ${queue.status || "available"}` : "No queue selected"}
-            </span>
+          {/* Queue footer with Pause/Resume controls */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#EDF1F7] px-3 py-3">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-[#8A98AD]">
+                Queue:
+              </span>
 
-            <button
-              type="button"
-              onClick={() => loadQueue(false)}
-              disabled={!serviceId}
-              className="cursor-pointer rounded-md px-2 py-1 text-xs font-semibold text-[#1768F2] transition hover:bg-[#EFF6FF] hover:underline disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Refresh
-            </button>
+              <span
+                className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                  queue?.status === "paused"
+                    ? "bg-amber-100 text-amber-700"
+                    : queue?.status === "open"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                {queue?.status || "Not selected"}
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={toggleQueueStatus}
+                disabled={
+                  !serviceId ||
+                  !queue ||
+                  busy ||
+                  queue.status === "closed"
+                }
+                className={`cursor-pointer rounded-md px-3 py-2 text-xs font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50 ${
+                  queue?.status === "paused"
+                    ? "bg-green-600 hover:bg-green-700"
+                    : "bg-amber-500 hover:bg-amber-600"
+                }`}
+              >
+                {queue?.status === "paused"
+                  ? "Resume Queue"
+                  : "Pause Queue"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => loadQueue(false)}
+                disabled={!serviceId || busy}
+                className="cursor-pointer rounded-md px-3 py-2 text-xs font-semibold text-[#1768F2] transition hover:bg-[#EFF6FF] hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Refresh
+              </button>
+            </div>
           </div>
         </section>
       </div>

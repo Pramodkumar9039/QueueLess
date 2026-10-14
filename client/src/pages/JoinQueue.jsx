@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
@@ -12,19 +12,38 @@ const JoinQueue = () => {
   const [service, setService] = useState(null);
   const [organization, setOrganization] = useState(null);
   const [queueId, setQueueId] = useState(null);
+  const [queueStatus, setQueueStatus] = useState("");
   const [peopleAhead, setPeopleAhead] = useState(0);
   const [estimatedWait, setEstimatedWait] = useState(0);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
   const [error, setError] = useState("");
 
+  // Fetch the queue's latest status.
+  const refreshQueueStatus = useCallback(async () => {
+    if (!serviceId) return;
+
+    try {
+      const response = await api.get(`/queues/service/${serviceId}`);
+      const queue = response.data.queue || response.data.data?.queue || response.data;
+
+      if (queue?._id || queue?.id) {
+        setQueueId(queue._id || queue.id);
+        setQueueStatus(String(queue.status || "open").toLowerCase());
+      }
+    } catch (err) {
+      console.error("Unable to refresh queue status:", err);
+    }
+  }, [serviceId]);
+
   useEffect(() => {
+    let cancelled = false;
+
     const fetchDetails = async () => {
       try {
         setLoading(true);
         setError("");
 
-        // Find the selected service and organization.
         const orgResponse = await api.get("/organizations");
         const organizations =
           orgResponse.data.organizations || orgResponse.data;
@@ -37,9 +56,11 @@ const JoinQueue = () => {
             `/services/organization/${org._id}`
           );
 
-          const orgServices = servicesResponse.data.services || [];
+          const orgServices =
+            servicesResponse.data.services || servicesResponse.data;
+
           const match = orgServices.find(
-            (item) => item._id === serviceId
+            (item) => String(item._id || item.id) === serviceId
           );
 
           if (match) {
@@ -49,6 +70,8 @@ const JoinQueue = () => {
           }
         }
 
+        if (cancelled) return;
+
         if (!foundService) {
           setError("Service not found.");
           return;
@@ -56,36 +79,57 @@ const JoinQueue = () => {
 
         setService(foundService);
         setOrganization(foundOrganization);
+        setEstimatedWait(foundService.estimatedDuration || 15);
 
-        // Retrieve or create the queue for this service.
         const queueResponse = await api.get(
           `/queues/service/${serviceId}`
         );
 
-        const queue =
-          queueResponse.data.queue || queueResponse.data;
+        if (cancelled) return;
 
-        if (!queue?._id) {
+        const queue =
+          queueResponse.data.queue ||
+          queueResponse.data.data?.queue ||
+          queueResponse.data;
+
+        if (!queue?._id && !queue?.id) {
           setError("Unable to retrieve the queue for this service.");
           return;
         }
 
-        setQueueId(queue._id);
-        setEstimatedWait(foundService.estimatedDuration || 15);
+        setQueueId(queue._id || queue.id);
+        setQueueStatus(String(queue.status || "open").toLowerCase());
         setPeopleAhead(0);
       } catch (err) {
-        console.error("Unable to load queue details:", err);
-        setError(
-          err.response?.data?.message ||
-            "Unable to load service and queue details."
-        );
+        if (!cancelled) {
+          console.error("Unable to load queue details:", err);
+          setError(
+            err.response?.data?.message ||
+              "Unable to load service and queue details."
+          );
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchDetails();
+
+    return () => {
+      cancelled = true;
+    };
   }, [serviceId]);
+
+  // Keep the queue status updated while this page is open.
+  useEffect(() => {
+    if (!serviceId || loading) return undefined;
+
+    const intervalId = setInterval(() => {
+      refreshQueueStatus();
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [serviceId, loading, refreshQueueStatus]);
 
   const handleJoinQueue = async () => {
     if (!token) {
@@ -100,19 +144,43 @@ const JoinQueue = () => {
     }
 
     if (!queueId) {
-      setError(
-        "Queue information is not ready. Please refresh and try again."
-      );
+      setError("Queue information is not ready. Please refresh and try again.");
       return;
     }
 
+    // Refresh status immediately before attempting to join.
     try {
       setJoining(true);
       setError("");
 
+      const queueResponse = await api.get(
+        `/queues/service/${serviceId}`
+      );
+
+      const latestQueue =
+        queueResponse.data.queue ||
+        queueResponse.data.data?.queue ||
+        queueResponse.data;
+
+      const latestStatus = String(
+        latestQueue.status || "open"
+      ).toLowerCase();
+
+      setQueueStatus(latestStatus);
+
+      if (latestStatus === "paused") {
+        setError("This queue is temporarily paused. Please try again later.");
+        return;
+      }
+
+      if (latestStatus !== "open") {
+        setError("This queue is currently unavailable.");
+        return;
+      }
+
       let createdToken;
 
-      // First, check for an existing active token.
+      // Check whether the customer already has an active token.
       try {
         const existingResponse = await api.get(
           `/tokens/queue/${queueId}/my-active`
@@ -120,7 +188,6 @@ const JoinQueue = () => {
 
         createdToken = existingResponse.data.token;
       } catch (err) {
-        // Only create a new token if none exists.
         if (err.response?.status !== 404) {
           throw err;
         }
@@ -129,7 +196,7 @@ const JoinQueue = () => {
         createdToken = response.data.token;
       }
 
-      if (!createdToken?._id) {
+      if (!createdToken?._id && !createdToken?.id) {
         throw new Error("The server did not return a valid token.");
       }
 
@@ -156,7 +223,7 @@ const JoinQueue = () => {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#EAF3FB] flex items-center justify-center p-4">
+      <main className="flex min-h-screen items-center justify-center bg-[#EAF3FB] p-4">
         <div className="rounded-xl bg-white px-8 py-6 text-sm text-[#52647E] shadow">
           Loading queue details...
         </div>
@@ -166,12 +233,12 @@ const JoinQueue = () => {
 
   if (error && (!service || !organization)) {
     return (
-      <main className="min-h-screen bg-[#EAF3FB] flex items-center justify-center p-4">
+      <main className="flex min-h-screen items-center justify-center bg-[#EAF3FB] p-4">
         <div className="rounded-xl bg-white p-8 text-center shadow">
           <p className="text-sm text-red-600">{error}</p>
           <Link
             to="/"
-            className="mt-4 inline-block text-blue-600"
+            className="mt-4 inline-block cursor-pointer text-blue-600 hover:underline"
           >
             Back to Home
           </Link>
@@ -179,6 +246,10 @@ const JoinQueue = () => {
       </main>
     );
   }
+
+  const isPaused = queueStatus === "paused";
+  const isClosed = queueStatus === "closed";
+  const isUnavailable = !queueId || isPaused || isClosed;
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#F0F7FE] via-[#E1EFFB] to-[#D6E8F8] px-4 py-10 sm:py-16">
@@ -192,7 +263,7 @@ const JoinQueue = () => {
             <Link
               to={`/organizations/${organization._id}`}
               aria-label="Close"
-              className="flex h-8 w-8 items-center justify-center rounded-full text-xl text-[#526078] hover:bg-[#F0F5FB]"
+              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-xl text-[#526078] transition hover:bg-[#F0F5FB]"
             >
               ×
             </Link>
@@ -225,6 +296,43 @@ const JoinQueue = () => {
               </div>
             </div>
 
+            {/* Queue status */}
+            {isPaused && (
+              <div
+                role="status"
+                className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4"
+              >
+                <p className="font-semibold text-amber-800">
+                  Queue Temporarily Paused
+                </p>
+                <p className="mt-1 text-sm text-amber-700">
+                  The staff has temporarily paused this queue. You can join
+                  when the queue resumes.
+                </p>
+              </div>
+            )}
+
+            {isClosed && (
+              <div
+                role="status"
+                className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4"
+              >
+                <p className="font-semibold text-red-800">
+                  Queue Closed
+                </p>
+                <p className="mt-1 text-sm text-red-700">
+                  This queue is currently closed and cannot accept new tokens.
+                </p>
+              </div>
+            )}
+
+            {queueStatus === "open" && (
+              <div className="mt-5 flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
+                <span className="h-2 w-2 rounded-full bg-green-500" />
+                Queue is open and accepting customers.
+              </div>
+            )}
+
             <div className="mt-5 grid grid-cols-2 gap-3 rounded-xl bg-[#EAF3FF] p-4">
               <div>
                 <p className="flex items-center gap-2 text-xs text-[#526B91]">
@@ -250,7 +358,10 @@ const JoinQueue = () => {
             </div>
 
             {error && (
-              <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
+              <p
+                role="alert"
+                className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600"
+              >
                 {error}
               </p>
             )}
@@ -258,14 +369,22 @@ const JoinQueue = () => {
             <button
               type="button"
               onClick={handleJoinQueue}
-              disabled={joining || !queueId}
-              className="mt-5 w-full rounded-lg bg-[#1768F2] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1256CF] disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={joining || isUnavailable}
+              className={`mt-5 w-full rounded-lg px-5 py-3 text-sm font-semibold text-white shadow-sm transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                isUnavailable
+                  ? "bg-gray-400"
+                  : "cursor-pointer bg-[#1768F2] hover:bg-[#1256CF]"
+              }`}
             >
               {joining
                 ? "Joining Queue..."
-                : !queueId
-                  ? "Queue Unavailable"
-                  : "Join Queue"}
+                : isPaused
+                  ? "Queue Paused"
+                  : isClosed
+                    ? "Queue Closed"
+                    : !queueId
+                      ? "Queue Unavailable"
+                      : "Join Queue"}
             </button>
 
             {!token && (
