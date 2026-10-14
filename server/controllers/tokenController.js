@@ -3,18 +3,20 @@ const mongoose = require("mongoose");
 const Token = require("../models/Token");
 const Queue = require("../models/Queue");
 
-// Create a new token for the logged-in customer
+// Create a new token for the logged-in customer in the specified queue
 const createToken = async (req, res) => {
   try {
     const { queueId } = req.body;
     const customerId = req.user.userId;
 
+    // Validate the queue ID
     if (!queueId || !mongoose.Types.ObjectId.isValid(queueId)) {
       return res.status(400).json({
         message: "A valid queue ID is required",
       });
     }
 
+    // Find the queue
     const queue = await Queue.findById(queueId);
 
     if (!queue) {
@@ -23,9 +25,13 @@ const createToken = async (req, res) => {
       });
     }
 
+    // Reject requests if the queue is paused or closed
     if (queue.status !== "open") {
       return res.status(400).json({
-        message: "This queue is not accepting customers",
+        message:
+          queue.status === "paused"
+            ? "This queue is temporarily paused. Please try again later."
+            : "This queue is not accepting customers",
       });
     }
 
@@ -43,16 +49,24 @@ const createToken = async (req, res) => {
       });
     }
 
-    // Increment the queue's token counter
+    // Increment only if the queue is still open
     const updatedQueue = await Queue.findOneAndUpdate(
-      { _id: queue._id, status: "open" },
-      { $inc: { lastTokenNumber: 1 } },
-      { returnDocument: "after" }
+      {
+        _id: queue._id,
+        status: "open",
+      },
+      {
+        $inc: { lastTokenNumber: 1 },
+      },
+      {
+        returnDocument: "after",
+      }
     );
 
     if (!updatedQueue) {
       return res.status(400).json({
-        message: "This queue is no longer accepting customers",
+        message:
+          "This queue is no longer accepting customers. Please try again later.",
       });
     }
 
@@ -89,6 +103,7 @@ const createToken = async (req, res) => {
     });
   }
 };
+
 
 // Get an existing active token for this customer and queue
 const getMyActiveToken = async (req, res) => {

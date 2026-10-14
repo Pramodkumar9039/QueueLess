@@ -1,43 +1,69 @@
+
+const bcrypt = require('bcryptjs');
 const User = require('../models/User.js');
 
 const createUser = async (req, res) => {
     try {
         const { name, email, password, phone } = req.body;
 
-        if (!name || !email || !password) {
+        if (!name?.trim() || !email?.trim() || !password) {
             return res.status(400).json({
                 message: 'Name, email, and password are required'
             });
         }
 
-        const existingUser = await User.findOne({ email });
+        const normalizedEmail = email.trim().toLowerCase();
 
-        if(existingUser){
+        if (password.length < 8) {
             return res.status(400).json({
-                message: "User with this email already exists"
+                message: 'Password must contain at least 8 characters'
             });
         }
 
-        const user = await User.create({
-            name,
-            email,
-            password,
-            phone
+        const existingUser = await User.findOne({
+            email: normalizedEmail
         });
 
-        res.status(201).json({
-            message: "User created successfully",
-            user
-        })
-    }
-    catch(error){
-        res.status(500).json({
-            message: "Failed to create user",
-            error: error.message
+        if (existingUser) {
+            return res.status(409).json({
+                message: 'An account with this email already exists'
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 12);
+
+        // Never allow the request body to choose the new user's role.
+        const user = await User.create({
+            name: name.trim(),
+            email: normalizedEmail,
+            password: hashedPassword,
+            phone: phone?.trim(),
+            role: 'customer'
+        });
+
+        return res.status(201).json({
+            message: 'User created successfully',
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                role: user.role
+            }
+        });
+    } catch (error) {
+        if (error.code === 11000) {
+            return res.status(409).json({
+                message: 'An account with this email already exists'
+            });
+        }
+
+        console.error('Create user error:', error.message);
+
+        return res.status(500).json({
+            message: 'Failed to create user'
         });
     }
 };
 
-module.exports = {
-    createUser
-}
+module.exports = { createUser };
