@@ -35,14 +35,34 @@ const StaffDashboard = () => {
     }));
   };
 
-  const loadOrganizations = useCallback(async () => {
+    const loadOrganizations = useCallback(async () => {
     try {
-      const response = await api.get("/organizations");
+      setError('');
+
+      const response = await api.get('/organizations/assigned');
       const data = response.data.organizations || response.data;
-      setOrganizations(Array.isArray(data) ? data : []);
+      const assignedOrganizations = Array.isArray(data) ? data : [];
+
+      setOrganizations(assignedOrganizations);
+
+      // Automatically select the first assigned organization.
+      setOrganizationId((currentId) => {
+        const stillAssigned = assignedOrganizations.some(
+          (org) => (org._id || org.id) === currentId
+        );
+
+        return stillAssigned
+          ? currentId
+          : assignedOrganizations.length > 0
+            ? assignedOrganizations[0]._id || assignedOrganizations[0].id
+            : '';
+      });
     } catch (err) {
+      setOrganizations([]);
+      setOrganizationId('');
       setError(
-        err.response?.data?.message || "Unable to load organizations."
+        err.response?.data?.message ||
+          'Unable to load your assigned organizations.'
       );
     } finally {
       setLoading(false);

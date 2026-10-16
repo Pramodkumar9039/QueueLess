@@ -1,11 +1,45 @@
 
+const mongoose = require("mongoose");
 const Queue = require("../models/Queue");
 const Service = require("../models/Service");
+const Organization = require("../models/Organization");
 
-// Get or create today's queue for a service
+// Check whether the logged-in user can manage this service
+const canManageService = async (service, user) => {
+  const organization = await Organization.findOne({
+    _id: service.organization,
+    isActive: true,
+  }).select("owner staff");
+
+  if (!organization) {
+    return false;
+  }
+
+  // Admins can manage only organizations they own
+  if (user.role === "admin") {
+    return organization.owner.toString() === user.userId;
+  }
+
+  // Staff can manage only organizations to which they are assigned
+  if (user.role === "staff") {
+    return organization.staff.some(
+      (staffId) => staffId.toString() === user.userId
+    );
+  }
+
+  return false;
+};
+
+// Get or create today's queue for a service (public)
 const getOrCreateQueue = async (req, res) => {
   try {
     const { serviceId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(serviceId)) {
+      return res.status(400).json({
+        message: "Invalid service ID",
+      });
+    }
 
     const service = await Service.findOne({
       _id: serviceId,
@@ -62,6 +96,12 @@ const updateQueueStatus = async (req, res) => {
     const { serviceId } = req.params;
     const { status } = req.body;
 
+    if (!mongoose.Types.ObjectId.isValid(serviceId)) {
+      return res.status(400).json({
+        message: "Invalid service ID",
+      });
+    }
+
     if (!["open", "paused"].includes(status)) {
       return res.status(400).json({
         message: "Status must be either open or paused",
@@ -76,6 +116,14 @@ const updateQueueStatus = async (req, res) => {
     if (!service) {
       return res.status(404).json({
         message: "Active service not found",
+      });
+    }
+
+    const authorized = await canManageService(service, req.user);
+
+    if (!authorized) {
+      return res.status(403).json({
+        message: "You are not authorized to manage this service's queue",
       });
     }
 

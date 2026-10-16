@@ -1,15 +1,25 @@
 
 const express = require('express');
-
 const router = express.Router();
+
 const authMiddleware = require('../middleware/authMiddleware');
 const staffMiddleware = require('../middleware/staffMiddleware');
+const adminMiddleware = require('../middleware/adminMiddleware');
 
-const { createUser } = require('../controllers/userController');
+const {
+  createUser,
+  createStaff,
+} = require('../controllers/userController');
 
-// Only authenticated staff/admin can access this endpoint.
-// We will add organization-level authorization before using it
-// for staff invitations.
+// Existing endpoint
 router.post('/', authMiddleware, staffMiddleware, createUser);
+
+// Admin-only staff creation and organization assignment
+router.post(
+  '/staff',
+  authMiddleware,
+  adminMiddleware,
+  createStaff
+);
 
 module.exports = router;
