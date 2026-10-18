@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FaBuilding, FaChevronDown, FaClock } from "react-icons/fa";
 import api from "../api/axios";
@@ -35,34 +34,39 @@ const StaffDashboard = () => {
     }));
   };
 
-    const loadOrganizations = useCallback(async () => {
+  // Load only the organizations assigned to the logged-in staff member.
+  const loadOrganizations = useCallback(async () => {
     try {
-      setError('');
+      setError("");
 
-      const response = await api.get('/organizations/assigned');
+      const response = await api.get("/organizations/assigned");
       const data = response.data.organizations || response.data;
       const assignedOrganizations = Array.isArray(data) ? data : [];
 
       setOrganizations(assignedOrganizations);
 
-      // Automatically select the first assigned organization.
       setOrganizationId((currentId) => {
         const stillAssigned = assignedOrganizations.some(
-          (org) => (org._id || org.id) === currentId
+          (org) => String(org._id || org.id) === currentId
         );
 
-        return stillAssigned
-          ? currentId
-          : assignedOrganizations.length > 0
-            ? assignedOrganizations[0]._id || assignedOrganizations[0].id
-            : '';
+        if (stillAssigned) {
+          return currentId;
+        }
+
+        return assignedOrganizations.length > 0
+          ? String(
+              assignedOrganizations[0]._id ||
+                assignedOrganizations[0].id
+            )
+          : "";
       });
     } catch (err) {
       setOrganizations([]);
-      setOrganizationId('');
+      setOrganizationId("");
       setError(
         err.response?.data?.message ||
-          'Unable to load your assigned organizations.'
+          "Unable to load your assigned organizations."
       );
     } finally {
       setLoading(false);
@@ -73,32 +77,55 @@ const StaffDashboard = () => {
     loadOrganizations();
   }, [loadOrganizations]);
 
+  // Load services for the selected organization and automatically
+  // select the first available service.
   useEffect(() => {
     let cancelled = false;
 
     const loadServices = async () => {
+      setServices([]);
+      setServiceId("");
+      setQueue(null);
+      setTokens([]);
+      latestRequest.current++;
+
       if (!organizationId) {
-        setServices([]);
-        setServiceId("");
-        setQueue(null);
-        setTokens([]);
         return;
       }
 
       try {
         setError("");
+        setNotice("");
+
         const response = await api.get(
           `/services/organization/${organizationId}`
         );
 
-        if (!cancelled) {
-          const data = response.data.services || response.data;
-          setServices(Array.isArray(data) ? data : []);
-          setServiceId("");
+        if (cancelled) return;
+
+        const data = response.data.services || response.data;
+        const availableServices = Array.isArray(data) ? data : [];
+
+        setServices(availableServices);
+
+        if (availableServices.length > 0) {
+          const firstService = availableServices[0];
+          const firstServiceId = firstService._id || firstService.id;
+
+          if (firstServiceId) {
+            setServiceId(String(firstServiceId));
+          } else {
+            setError("The service response does not contain a valid ID.");
+          }
+        } else {
+          setError(
+            "No active services are available for this organization."
+          );
         }
       } catch (err) {
         if (!cancelled) {
           setServices([]);
+          setServiceId("");
           setError(
             err.response?.data?.message || "Unable to load services."
           );
@@ -113,6 +140,7 @@ const StaffDashboard = () => {
     };
   }, [organizationId]);
 
+  // Load today's queue and its tokens for the selected service.
   const loadQueue = useCallback(async (silent = false) => {
     const selectedServiceId = serviceIdRef.current;
 
@@ -124,7 +152,9 @@ const StaffDashboard = () => {
 
     if (silent && refreshInProgress.current) return;
 
-    if (silent) refreshInProgress.current = true;
+    if (silent) {
+      refreshInProgress.current = true;
+    }
 
     const requestId = ++latestRequest.current;
 
@@ -179,16 +209,18 @@ const StaffDashboard = () => {
         );
       }
     } finally {
-      if (silent) refreshInProgress.current = false;
+      if (silent) {
+        refreshInProgress.current = false;
+      }
     }
   }, []);
 
+  // Load queue whenever the selected service changes.
   useEffect(() => {
     if (!serviceId) {
       latestRequest.current++;
       setQueue(null);
       setTokens([]);
-      setError("");
       setNotice("");
       return;
     }
@@ -196,6 +228,7 @@ const StaffDashboard = () => {
     loadQueue();
   }, [serviceId, loadQueue]);
 
+  // Refresh queue data every five seconds.
   useEffect(() => {
     if (!serviceId) return undefined;
 
@@ -220,6 +253,7 @@ const StaffDashboard = () => {
 
   const next = waiting[0];
 
+  // Call the next waiting customer.
   const callNext = async () => {
     const queueId = queue?._id || queue?.id;
 
@@ -271,13 +305,16 @@ const StaffDashboard = () => {
     }
   };
 
+  // Complete the currently serving customer.
   const completeCustomer = async () => {
     const servingToken = tokens.find(
       (item) => item.status === "serving"
     );
 
     if (!servingToken?._id && !servingToken?.id) {
-      setError("No serving customer was found. Refresh the queue and try again.");
+      setError(
+        "No serving customer was found. Refresh the queue and try again."
+      );
       return;
     }
 
@@ -287,10 +324,13 @@ const StaffDashboard = () => {
       setNotice("");
 
       const tokenId = servingToken._id || servingToken.id;
+
       await api.patch(`/tokens/${tokenId}/complete`);
       await loadQueue();
 
-      setNotice(`Token #${servingToken.tokenNumber} has been completed.`);
+      setNotice(
+        `Token #${servingToken.tokenNumber} has been completed.`
+      );
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -408,14 +448,20 @@ const StaffDashboard = () => {
 
               <select
                 value={organizationId}
-                onChange={(event) =>
-                  setOrganizationId(event.target.value)
-                }
+                onChange={(event) => {
+                  setOrganizationId(event.target.value);
+                  setError("");
+                  setNotice("");
+                }}
                 className="w-full cursor-pointer appearance-none rounded-lg border border-[#E0E9F4] bg-white py-2.5 pl-8 pr-8 text-xs text-[#263653] outline-none transition focus:border-[#88BDF2] focus:ring-2 focus:ring-[#BDDDFC]"
               >
                 <option value="">Select organization</option>
+
                 {organizations.map((org) => (
-                  <option key={org._id || org.id} value={org._id || org.id}>
+                  <option
+                    key={org._id || org.id}
+                    value={org._id || org.id}
+                  >
                     {org.name}
                   </option>
                 ))}
@@ -433,11 +479,20 @@ const StaffDashboard = () => {
             <div className="relative">
               <select
                 value={serviceId}
-                onChange={(event) => setServiceId(event.target.value)}
-                disabled={!organizationId}
+                onChange={(event) => {
+                  setServiceId(event.target.value);
+                  setError("");
+                  setNotice("");
+                }}
+                disabled={!organizationId || services.length === 0}
                 className="w-full cursor-pointer appearance-none rounded-lg border border-[#E0E9F4] bg-white py-2.5 pl-3 pr-8 text-xs text-[#263653] outline-none transition focus:border-[#88BDF2] focus:ring-2 focus:ring-[#BDDDFC] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <option value="">Select service</option>
+                <option value="">
+                  {services.length === 0
+                    ? "No services available"
+                    : "Select service"}
+                </option>
+
                 {services.map((service) => (
                   <option
                     key={service._id || service.id}
@@ -528,7 +583,11 @@ const StaffDashboard = () => {
             {[
               { id: "waiting", label: "Waiting", count: waiting.length },
               { id: "serving", label: "Serving", count: serving.length },
-              { id: "completed", label: "Completed", count: completed.length },
+              {
+                id: "completed",
+                label: "Completed",
+                count: completed.length,
+              },
             ].map((tab) => (
               <button
                 key={tab.id}

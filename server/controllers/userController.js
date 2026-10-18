@@ -171,4 +171,73 @@ const createStaff = async (req, res) => {
 };
 
 
-module.exports = { createUser , createStaff };
+const assignExistingStaff = async (req, res) => {
+  try {
+    const { staffUserId, organizationId } = req.body;
+
+    if (!staffUserId || !organizationId) {
+      return res.status(400).json({
+        message: 'Staff user ID and organization ID are required',
+      });
+    }
+
+    if (
+      !mongoose.Types.ObjectId.isValid(staffUserId) ||
+      !mongoose.Types.ObjectId.isValid(organizationId)
+    ) {
+      return res.status(400).json({
+        message: 'Invalid staff user ID or organization ID',
+      });
+    }
+
+    // Only assign staff to an active organization owned by this admin.
+    const organization = await Organization.findOne({
+      _id: organizationId,
+      owner: req.user.userId,
+      isActive: true,
+    });
+
+    if (!organization) {
+      return res.status(404).json({
+        message: 'Active organization not found',
+      });
+    }
+
+    const staffUser = await User.findOne({
+      _id: staffUserId,
+      role: 'staff',
+    });
+
+    if (!staffUser) {
+      return res.status(404).json({
+        message: 'Staff account not found',
+      });
+    }
+
+    // Avoid duplicate assignments.
+    organization.staff.addToSet(staffUser._id);
+    await organization.save();
+
+    return res.status(200).json({
+      message: 'Existing staff member assigned successfully',
+      staff: {
+        id: staffUser._id,
+        name: staffUser.name,
+        email: staffUser.email,
+      },
+      organization: {
+        id: organization._id,
+        name: organization.name,
+      },
+    });
+  } catch (error) {
+    console.error('Assign existing staff error:', error.message);
+
+    return res.status(500).json({
+      message: 'Failed to assign staff member',
+    });
+  }
+};
+
+
+module.exports = { createUser , createStaff , assignExistingStaff };
