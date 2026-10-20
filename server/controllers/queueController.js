@@ -1,4 +1,3 @@
-
 const mongoose = require("mongoose");
 const Queue = require("../models/Queue");
 const Service = require("../models/Service");
@@ -20,7 +19,7 @@ const canManageService = async (service, user) => {
     return organization.owner.toString() === user.userId;
   }
 
-  // Staff can manage only organizations to which they are assigned
+  // Staff can manage only organizations they are assigned to
   if (user.role === "staff") {
     return organization.staff.some(
       (staffId) => staffId.toString() === user.userId
@@ -119,6 +118,7 @@ const updateQueueStatus = async (req, res) => {
       });
     }
 
+    // Verify organization access before changing the queue
     const authorized = await canManageService(service, req.user);
 
     if (!authorized) {

@@ -1,62 +1,44 @@
+
 const mongoose = require("mongoose");
 const Token = require("../models/Token");
 const Queue = require("../models/Queue");
 const Service = require("../models/Service");
 const Organization = require("../models/Organization");
 
-// Check whether a staff member is assigned to the organization
-const hasOrganizationAccess = async (user, organizationId) => {
-  // Admins can manage organizations they own.
-  if (user.role === "admin") {
-    const organization = await Organization.findOne({
-      _id: organizationId,
-      owner: user.userId,
-      isActive: true,
-    });
-
-    return Boolean(organization);
-  }
-
-  // Staff can manage only organizations to which they are assigned.
-  const organization = await Organization.findOne({
-    _id: organizationId,
-    staff: user.userId,
-    isActive: true,
-  });
-
-  return Boolean(organization);
-};
-
-// Find a queue and verify the logged-in staff member's access
-const getAuthorizedQueue = async (queueId, user) => {
-  const queue = await Queue.findById(queueId);
-
-  if (!queue) {
-    return { error: "not_found" };
-  }
-
+// Check whether a staff member or admin can manage a queue.
+const canManageQueue = async (queue, user) => {
   const service = await Service.findOne({
     _id: queue.service,
     isActive: true,
-  });
+  }).select("organization");
 
   if (!service) {
-    return { error: "not_found" };
+    return false;
   }
 
-  const hasAccess = await hasOrganizationAccess(
-    user,
-    service.organization
-  );
+  const organization = await Organization.findOne({
+    _id: service.organization,
+    isActive: true,
+  }).select("owner staff");
 
-  if (!hasAccess) {
-    return { error: "forbidden" };
+  if (!organization) {
+    return false;
   }
 
-  return { queue, service };
+  if (user.role === "admin") {
+    return organization.owner.toString() === user.userId;
+  }
+
+  if (user.role === "staff") {
+    return organization.staff.some(
+      (staffId) => staffId.toString() === user.userId
+    );
+  }
+
+  return false;
 };
 
-// Create a token for the logged-in customer
+// Create a token for the logged-in customer.
 const createToken = async (req, res) => {
   try {
     const { queueId } = req.body;
@@ -99,16 +81,9 @@ const createToken = async (req, res) => {
     }
 
     const updatedQueue = await Queue.findOneAndUpdate(
-      {
-        _id: queue._id,
-        status: "open",
-      },
-      {
-        $inc: { lastTokenNumber: 1 },
-      },
-      {
-        returnDocument: "after",
-      }
+      { _id: queue._id, status: "open" },
+      { $inc: { lastTokenNumber: 1 } },
+      { returnDocument: "after" }
     );
 
     if (!updatedQueue) {
@@ -135,9 +110,7 @@ const createToken = async (req, res) => {
           _id: updatedQueue._id,
           lastTokenNumber: updatedQueue.lastTokenNumber,
         },
-        {
-          $inc: { lastTokenNumber: -1 },
-        }
+        { $inc: { lastTokenNumber: -1 } }
       );
 
       throw error;
@@ -151,33 +124,28 @@ const createToken = async (req, res) => {
   }
 };
 
-// Get the logged-in customer's active token
+// Get the logged-in customer's active token.
 const getMyActiveToken = async (req, res) => {
   try {
     const { queueId } = req.params;
-    const customerId = req.user.userId;
 
     if (!mongoose.Types.ObjectId.isValid(queueId)) {
-      return res.status(400).json({
-        message: "Invalid queue ID",
-      });
+      return res.status(400).json({ message: "Invalid queue ID" });
     }
 
-    const existingToken = await Token.findOne({
+    const token = await Token.findOne({
       queue: queueId,
-      customer: customerId,
+      customer: req.user.userId,
       status: { $in: ["waiting", "serving"] },
     }).sort({ createdAt: -1 });
 
-    if (!existingToken) {
-      return res.status(404).json({
-        message: "No active token found",
-      });
+    if (!token) {
+      return res.status(404).json({ message: "No active token found" });
     }
 
     return res.status(200).json({
       message: "Active token found",
-      token: existingToken,
+      token,
     });
   } catch (error) {
     console.error("Get active token error:", error);
@@ -188,21 +156,18 @@ const getMyActiveToken = async (req, res) => {
   }
 };
 
-// Get the status of a token belonging to the logged-in customer
+// Get the status of a token belonging to the logged-in customer.
 const getMyTokenStatus = async (req, res) => {
   try {
     const { tokenId } = req.params;
-    const customerId = req.user.userId;
 
     if (!mongoose.Types.ObjectId.isValid(tokenId)) {
-      return res.status(400).json({
-        message: "Invalid token ID",
-      });
+      return res.status(400).json({ message: "Invalid token ID" });
     }
 
     const token = await Token.findOne({
       _id: tokenId,
-      customer: customerId,
+      customer: req.user.userId,
     }).populate({
       path: "queue",
       populate: {
@@ -212,9 +177,7 @@ const getMyTokenStatus = async (req, res) => {
     });
 
     if (!token) {
-      return res.status(404).json({
-        message: "Token not found",
-      });
+      return res.status(404).json({ message: "Token not found" });
     }
 
     if (!token.queue) {
@@ -230,7 +193,6 @@ const getMyTokenStatus = async (req, res) => {
     });
 
     const duration = token.queue.service?.estimatedDuration ?? 15;
-    const estimatedWaitingMinutes = peopleAhead * duration;
 
     return res.status(200).json({
       message: "Token status retrieved successfully",
@@ -246,7 +208,7 @@ const getMyTokenStatus = async (req, res) => {
         status: token.queue.status,
       },
       peopleAhead,
-      estimatedWaitingMinutes,
+      estimatedWaitingMinutes: peopleAhead * duration,
     });
   } catch (error) {
     console.error("Get token status error:", error);
@@ -257,37 +219,29 @@ const getMyTokenStatus = async (req, res) => {
   }
 };
 
-// Staff: call the next waiting customer
+// Staff: call the next waiting customer.
 const callNextCustomer = async (req, res) => {
   try {
     const { queueId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(queueId)) {
-      return res.status(400).json({
-        message: "Invalid queue ID",
-      });
+      return res.status(400).json({ message: "Invalid queue ID" });
     }
 
-    const result = await getAuthorizedQueue(queueId, req.user);
+    const queue = await Queue.findById(queueId);
 
-    if (result.error === "not_found") {
-      return res.status(404).json({
-        message: "Queue or active service not found",
-      });
+    if (!queue) {
+      return res.status(404).json({ message: "Queue not found" });
     }
 
-    if (result.error === "forbidden") {
+    if (!(await canManageQueue(queue, req.user))) {
       return res.status(403).json({
-        message: "You are not assigned to this organization",
+        message: "You are not assigned to this organization's queue",
       });
     }
-
-    const { queue } = result;
 
     if (queue.status !== "open") {
-      return res.status(400).json({
-        message: "Queue is not open",
-      });
+      return res.status(400).json({ message: "Queue is not open" });
     }
 
     const currentToken = await Token.findOne({
@@ -297,24 +251,15 @@ const callNextCustomer = async (req, res) => {
 
     if (currentToken) {
       return res.status(409).json({
-        message:
-          "Complete the current token before calling the next customer",
+        message: "Complete the current token before calling the next customer",
         token: currentToken,
       });
     }
 
     const nextToken = await Token.findOneAndUpdate(
-      {
-        queue: queue._id,
-        status: "waiting",
-      },
-      {
-        $set: { status: "serving" },
-      },
-      {
-        sort: { tokenNumber: 1 },
-        returnDocument: "after",
-      }
+      { queue: queue._id, status: "waiting" },
+      { $set: { status: "serving" } },
+      { sort: { tokenNumber: 1 }, returnDocument: "after" }
     );
 
     if (!nextToken) {
@@ -336,64 +281,45 @@ const callNextCustomer = async (req, res) => {
   }
 };
 
-// Staff: complete a serving token only within an assigned organization
+// Staff: complete a token only in an assigned organization.
 const completeToken = async (req, res) => {
   try {
     const { tokenId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(tokenId)) {
-      return res.status(400).json({
-        message: "Invalid token ID",
-      });
+      return res.status(400).json({ message: "Invalid token ID" });
     }
 
     const token = await Token.findById(tokenId);
 
-    if (!token || token.status !== "serving") {
-      return res.status(404).json({
-        message: "Serving token not found",
-      });
+    if (!token) {
+      return res.status(404).json({ message: "Token not found" });
     }
 
-    const result = await getAuthorizedQueue(
-      token.queue,
-      req.user
-    );
+    const queue = await Queue.findById(token.queue);
 
-    if (result.error === "not_found") {
-      return res.status(404).json({
-        message: "Queue or active service not found",
-      });
+    if (!queue) {
+      return res.status(404).json({ message: "Queue not found" });
     }
 
-    if (result.error === "forbidden") {
+    if (!(await canManageQueue(queue, req.user))) {
       return res.status(403).json({
-        message: "You are not assigned to this organization",
+        message: "You are not assigned to this organization's queue",
       });
     }
 
-    const updatedToken = await Token.findOneAndUpdate(
-      {
-        _id: tokenId,
-        status: "serving",
-      },
-      {
-        $set: { status: "completed" },
-      },
-      {
-        returnDocument: "after",
-      }
-    );
-
-    if (!updatedToken) {
-      return res.status(404).json({
-        message: "Serving token not found",
+    if (token.status !== "serving") {
+      return res.status(400).json({
+        message: "Only a currently serving token can be completed",
       });
     }
+
+    token.status = "completed";
+    await token.save();
 
     return res.status(200).json({
       message: "Token completed successfully",
-      token: updatedToken,
+      token,
     });
   } catch (error) {
     console.error("Complete token error:", error);
@@ -404,32 +330,28 @@ const completeToken = async (req, res) => {
   }
 };
 
-// Get queue tokens only for staff assigned to the organization
+// Staff: view tokens only for assigned organizations.
 const getQueueTokens = async (req, res) => {
   try {
     const { queueId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(queueId)) {
-      return res.status(400).json({
-        message: "Invalid queue ID",
-      });
+      return res.status(400).json({ message: "Invalid queue ID" });
     }
 
-    const result = await getAuthorizedQueue(queueId, req.user);
+    const queue = await Queue.findById(queueId);
 
-    if (result.error === "not_found") {
-      return res.status(404).json({
-        message: "Queue or active service not found",
-      });
+    if (!queue) {
+      return res.status(404).json({ message: "Queue not found" });
     }
 
-    if (result.error === "forbidden") {
+    if (!(await canManageQueue(queue, req.user))) {
       return res.status(403).json({
-        message: "You are not assigned to this organization",
+        message: "You are not assigned to this organization's queue",
       });
     }
 
-    const tokens = await Token.find({ queue: queueId })
+    const tokens = await Token.find({ queue: queue._id })
       .populate("customer", "name")
       .select("tokenNumber status joinedAt createdAt customer queue")
       .sort({ tokenNumber: 1 })
