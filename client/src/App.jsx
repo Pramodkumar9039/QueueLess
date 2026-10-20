@@ -18,6 +18,7 @@ import OrganizationDetails from "./pages/OrganizationDetails";
 import JoinQueue from "./pages/JoinQueue";
 import QueueSuccess from "./pages/QueueSuccess";
 import StaffDashboard from "./pages/StaffDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
@@ -27,6 +28,17 @@ const StaffRoute = () => {
   const { user } = useAuth();
 
   if (user?.role !== "staff" && user?.role !== "admin") {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <Outlet />;
+};
+
+// Allow only admin users.
+const AdminRoute = () => {
+  const { user } = useAuth();
+
+  if (user?.role !== "admin") {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -63,9 +75,14 @@ const App = () => {
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
 
-            {/* Staff-only routes */}
+            {/* Staff and admin routes */}
             <Route element={<StaffRoute />}>
               <Route path="/staff" element={<StaffDashboard />} />
+            </Route>
+
+            {/* Admin-only routes */}
+            <Route element={<AdminRoute />}>
+              <Route path="/admin" element={<AdminDashboard />} />
             </Route>
           </Route>
 
