@@ -1,25 +1,38 @@
 
 import { useEffect, useState } from "react";
-import { FaBuilding, FaSync } from "react-icons/fa";
+import { FaBuilding, FaSync, FaPlus, FaTimes } from "react-icons/fa";
 import api from "../api/axios";
+
+const initialForm = {
+  name: "",
+  type: "clinic",
+  address: "",
+  description: "",
+};
 
 const AdminDashboard = () => {
   const [organizations, setOrganizations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState(initialForm);
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState("");
 
   const loadOrganizations = async () => {
     try {
       setLoading(true);
       setError("");
 
-      const response = await api.get("/organizations");
+      // Load only organizations owned by this admin.
+      const response = await api.get("/organizations/assigned");
       const data = response.data.organizations || response.data;
 
       setOrganizations(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(
-        err.response?.data?.message || "Unable to load organizations."
+        err.response?.data?.message ||
+          "Unable to load organizations."
       );
     } finally {
       setLoading(false);
@@ -29,6 +42,40 @@ const AdminDashboard = () => {
   useEffect(() => {
     loadOrganizations();
   }, []);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleCreate = async (e) => {
+    e.preventDefault();
+
+    try {
+      setSubmitting(true);
+      setError("");
+      setSuccess("");
+
+      await api.post("/organizations", form);
+
+      setForm(initialForm);
+      setShowForm(false);
+      setSuccess("Organization created successfully.");
+
+      await loadOrganizations();
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          "Unable to create organization."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const activeCount = organizations.filter(
     (org) => org.isActive
@@ -51,16 +98,141 @@ const AdminDashboard = () => {
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={loadOrganizations}
-            disabled={loading}
-            className="flex shrink-0 items-center gap-1.5 rounded-md bg-white px-2.5 py-2 text-xs font-semibold text-blue-700 shadow-sm hover:bg-blue-50 disabled:opacity-50"
-          >
-            <FaSync className={loading ? "animate-spin" : ""} />
-            Refresh
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={loadOrganizations}
+              disabled={loading}
+              title="Refresh organizations"
+              className="rounded-md bg-white p-2 text-xs text-blue-700 shadow-sm hover:bg-blue-50 disabled:opacity-50"
+            >
+              <FaSync className={loading ? "animate-spin" : ""} />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setShowForm(!showForm);
+                setError("");
+                setSuccess("");
+              }}
+              className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
+            >
+              {showForm ? <FaTimes /> : <FaPlus />}
+              {showForm ? "Close" : "Create"}
+            </button>
+          </div>
         </header>
+
+        {/* Messages */}
+        {success && (
+          <div className="mb-3 rounded-md bg-green-50 px-3 py-2 text-xs text-green-700">
+            {success}
+          </div>
+        )}
+
+        {/* Create Organization Form */}
+        {showForm && (
+          <section className="mb-4 rounded-lg border border-blue-100 bg-white p-4 shadow-sm">
+            <h2 className="mb-3 text-sm font-bold text-[#101D3A]">
+              Create Organization
+            </h2>
+
+            <form onSubmit={handleCreate} className="space-y-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-700">
+                    Organization Name *
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={form.name}
+                    onChange={handleChange}
+                    placeholder="e.g. City Care Clinic"
+                    required
+                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-700">
+                    Organization Type *
+                  </label>
+                  <select
+                    name="type"
+                    value={form.type}
+                    onChange={handleChange}
+                    required
+                    className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  >
+                    <option value="clinic">Clinic</option>
+                    <option value="salon">Salon</option>
+                    <option value="college">College</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-medium text-slate-700">
+                  Address *
+                </label>
+                <input
+                  type="text"
+                  name="address"
+                  value={form.address}
+                  onChange={handleChange}
+                  placeholder="Enter organization address"
+                  required
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-medium text-slate-700">
+                  Description
+                </label>
+                <textarea
+                  name="description"
+                  value={form.description}
+                  onChange={handleChange}
+                  placeholder="Enter a short description (optional)"
+                  rows={2}
+                  className="w-full resize-y rounded-md border border-slate-300 px-3 py-2 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+
+              {error && (
+                <p className="rounded-md bg-red-50 px-3 py-2 text-xs text-red-700">
+                  {error}
+                </p>
+              )}
+
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowForm(false);
+                    setForm(initialForm);
+                    setError("");
+                  }}
+                  className="rounded-md border border-slate-300 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="rounded-md bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {submitting ? "Creating..." : "Create Organization"}
+                </button>
+              </div>
+            </form>
+          </section>
+        )}
 
         {/* Statistics */}
         <section className="mb-4 grid grid-cols-2 gap-3">
@@ -97,7 +269,7 @@ const AdminDashboard = () => {
             </span>
           </div>
 
-          {error && (
+          {!showForm && error && (
             <p className="m-3 rounded-md bg-red-50 p-2 text-xs text-red-700">
               {error}
             </p>
