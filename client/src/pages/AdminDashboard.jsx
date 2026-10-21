@@ -32,12 +32,51 @@ const AdminDashboard = () => {
   const [organizationForm, setOrganizationForm] = useState(
     initialOrganizationForm
   );
-  const [submittingOrganization, setSubmittingOrganization] = useState(false);
+  const [submittingOrganization, setSubmittingOrganization] =
+    useState(false);
 
   const [selectedOrganization, setSelectedOrganization] = useState(null);
   const [serviceForm, setServiceForm] = useState(initialServiceForm);
   const [submittingService, setSubmittingService] = useState(false);
 
+  // Services belonging to each organization
+  const [servicesByOrganization, setServicesByOrganization] = useState({});
+  const [loadingServices, setLoadingServices] = useState({});
+
+  // Load services for one organization
+  const loadServices = async (organizationId) => {
+    try {
+      setLoadingServices((prev) => ({
+        ...prev,
+        [organizationId]: true,
+      }));
+
+      const response = await api.get(
+        `/services/organization/${organizationId}`
+      );
+
+      const services = response.data.services || [];
+
+      setServicesByOrganization((prev) => ({
+        ...prev,
+        [organizationId]: services,
+      }));
+    } catch (err) {
+      console.error("Load services error:", err.response || err);
+
+      setServicesByOrganization((prev) => ({
+        ...prev,
+        [organizationId]: [],
+      }));
+    } finally {
+      setLoadingServices((prev) => ({
+        ...prev,
+        [organizationId]: false,
+      }));
+    }
+  };
+
+  // Load organizations and their services
   const loadOrganizations = async () => {
     try {
       setLoading(true);
@@ -45,10 +84,18 @@ const AdminDashboard = () => {
 
       const response = await api.get("/organizations/assigned");
       const data = response.data.organizations || response.data;
+      const organizationList = Array.isArray(data) ? data : [];
 
-      setOrganizations(Array.isArray(data) ? data : []);
+      setOrganizations(organizationList);
+
+      await Promise.all(
+        organizationList.map((org) =>
+          loadServices(org._id || org.id)
+        )
+      );
     } catch (err) {
       console.error("Load organizations error:", err.response || err);
+
       setError(
         err.response?.data?.message ||
           "Unable to load organizations."
@@ -71,6 +118,7 @@ const AdminDashboard = () => {
     }));
   };
 
+  // Create organization
   const handleCreateOrganization = async (e) => {
     e.preventDefault();
 
@@ -88,6 +136,7 @@ const AdminDashboard = () => {
       await loadOrganizations();
     } catch (err) {
       console.error("Create organization error:", err.response || err);
+
       setError(
         err.response?.data?.message ||
           "Unable to create organization."
@@ -105,6 +154,7 @@ const AdminDashboard = () => {
     setSuccess("");
   };
 
+  // Create service
   const handleCreateService = async (e) => {
     e.preventDefault();
 
@@ -119,16 +169,25 @@ const AdminDashboard = () => {
         name: serviceForm.name.trim(),
         description: serviceForm.description.trim(),
         estimatedDuration: Number(serviceForm.estimatedDuration),
-        organizationId: selectedOrganization._id || selectedOrganization.id,
+        organizationId:
+          selectedOrganization._id || selectedOrganization.id,
       });
+
+      const organizationName = selectedOrganization.name;
+      const organizationId =
+        selectedOrganization._id || selectedOrganization.id;
 
       setSelectedOrganization(null);
       setServiceForm(initialServiceForm);
       setSuccess(
-        `Service created successfully for ${selectedOrganization.name}.`
+        `Service created successfully for ${organizationName}.`
       );
+
+      // Refresh the services list after creation
+      await loadServices(organizationId);
     } catch (err) {
       console.error("Create service error:", err.response || err);
+
       setError(
         err.response?.data?.message ||
           "Unable to create service."
@@ -151,9 +210,11 @@ const AdminDashboard = () => {
             <p className="text-[11px] font-medium text-blue-600">
               QueueLess Management
             </p>
+
             <h1 className="text-xl font-bold text-[#101D3A]">
               Admin Dashboard
             </h1>
+
             <p className="text-xs text-slate-600">
               Manage organizations and services.
             </p>
@@ -209,6 +270,7 @@ const AdminDashboard = () => {
                   <label className="mb-1 block text-xs font-medium text-slate-700">
                     Organization Name *
                   </label>
+
                   <input
                     name="name"
                     value={organizationForm.name}
@@ -223,6 +285,7 @@ const AdminDashboard = () => {
                   <label className="mb-1 block text-xs font-medium text-slate-700">
                     Organization Type *
                   </label>
+
                   <select
                     name="type"
                     value={organizationForm.type}
@@ -242,6 +305,7 @@ const AdminDashboard = () => {
                 <label className="mb-1 block text-xs font-medium text-slate-700">
                   Address *
                 </label>
+
                 <input
                   name="address"
                   value={organizationForm.address}
@@ -256,6 +320,7 @@ const AdminDashboard = () => {
                 <label className="mb-1 block text-xs font-medium text-slate-700">
                   Description
                 </label>
+
                 <textarea
                   name="description"
                   value={organizationForm.description}
@@ -280,12 +345,15 @@ const AdminDashboard = () => {
                 >
                   Cancel
                 </button>
+
                 <button
                   type="submit"
                   disabled={submittingOrganization}
                   className="rounded-md bg-blue-600 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
                 >
-                  {submittingOrganization ? "Creating..." : "Create Organization"}
+                  {submittingOrganization
+                    ? "Creating..."
+                    : "Create Organization"}
                 </button>
               </div>
             </form>
@@ -300,6 +368,7 @@ const AdminDashboard = () => {
                 <h2 className="text-sm font-bold text-[#101D3A]">
                   Add Service
                 </h2>
+
                 <p className="mt-1 text-xs text-slate-500">
                   Organization: {selectedOrganization.name}
                 </p>
@@ -323,6 +392,7 @@ const AdminDashboard = () => {
                 <label className="mb-1 block text-xs font-medium text-slate-700">
                   Service Name *
                 </label>
+
                 <input
                   name="name"
                   value={serviceForm.name}
@@ -342,6 +412,7 @@ const AdminDashboard = () => {
                 <label className="mb-1 block text-xs font-medium text-slate-700">
                   Description
                 </label>
+
                 <textarea
                   name="description"
                   value={serviceForm.description}
@@ -361,6 +432,7 @@ const AdminDashboard = () => {
                 <label className="mb-1 block text-xs font-medium text-slate-700">
                   Estimated Duration (minutes) *
                 </label>
+
                 <input
                   type="number"
                   min="1"
@@ -392,6 +464,7 @@ const AdminDashboard = () => {
                 >
                   Cancel
                 </button>
+
                 <button
                   type="submit"
                   disabled={submittingService}
@@ -411,8 +484,10 @@ const AdminDashboard = () => {
               <p className="text-[11px] text-slate-500 sm:text-xs">
                 Total Organizations
               </p>
+
               <FaBuilding className="text-sm text-blue-600" />
             </div>
+
             <p className="mt-1 text-xl font-bold text-[#101D3A]">
               {organizations.length}
             </p>
@@ -422,6 +497,7 @@ const AdminDashboard = () => {
             <p className="text-[11px] text-slate-500 sm:text-xs">
               Active Organizations
             </p>
+
             <p className="mt-1 text-xl font-bold text-green-600">
               {activeCount}
             </p>
@@ -434,6 +510,7 @@ const AdminDashboard = () => {
             <h2 className="text-sm font-bold text-[#101D3A]">
               Organizations
             </h2>
+
             <span className="rounded-full bg-blue-50 px-2 py-1 text-[10px] font-semibold text-blue-700">
               {organizations.length} total
             </span>
@@ -452,67 +529,124 @@ const AdminDashboard = () => {
           ) : organizations.length === 0 ? (
             <div className="p-5 text-center">
               <FaBuilding className="mx-auto text-xl text-slate-300" />
+
               <p className="mt-2 text-sm font-semibold text-slate-700">
                 No organizations found
               </p>
+
               <p className="text-xs text-slate-500">
                 Create an organization to get started.
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-2.5 p-3 sm:grid-cols-2">
-              {organizations.map((org) => (
-                <article
-                  key={org._id || org.id}
-                  className="rounded-lg border border-slate-200 p-2.5 transition hover:border-blue-300"
-                >
-                  <div className="flex items-start gap-2">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-blue-50 text-xs text-blue-600">
-                      <FaBuilding />
+              {organizations.map((org) => {
+                const organizationId = org._id || org.id;
+                const services = servicesByOrganization[organizationId] || [];
+
+                return (
+                  <article
+                    key={organizationId}
+                    className="rounded-lg border border-slate-200 p-2.5 transition hover:border-blue-300"
+                  >
+                    <div className="flex items-start gap-2">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-blue-50 text-xs text-blue-600">
+                        <FaBuilding />
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <h3 className="break-words text-xs font-bold text-[#101D3A] sm:text-sm">
+                          {org.name}
+                        </h3>
+
+                        <p className="mt-0.5 text-[10px] capitalize text-slate-500">
+                          {org.type}
+                        </p>
+                      </div>
+
+                      <span
+                        className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${
+                          org.isActive
+                            ? "bg-green-50 text-green-700"
+                            : "bg-red-50 text-red-700"
+                        }`}
+                      >
+                        {org.isActive ? "Active" : "Inactive"}
+                      </span>
                     </div>
 
-                    <div className="min-w-0 flex-1">
-                      <h3 className="break-words text-xs font-bold text-[#101D3A] sm:text-sm">
-                        {org.name}
-                      </h3>
-                      <p className="mt-0.5 text-[10px] capitalize text-slate-500">
-                        {org.type}
-                      </p>
-                    </div>
-
-                    <span
-                      className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${
-                        org.isActive
-                          ? "bg-green-50 text-green-700"
-                          : "bg-red-50 text-red-700"
-                      }`}
-                    >
-                      {org.isActive ? "Active" : "Inactive"}
-                    </span>
-                  </div>
-
-                  <p className="mt-2 break-words text-[11px] text-slate-600">
-                    {org.address}
-                  </p>
-
-                  {org.description && (
-                    <p className="mt-1 break-words text-[11px] leading-4 text-slate-500">
-                      {org.description}
+                    <p className="mt-2 break-words text-[11px] text-slate-600">
+                      {org.address}
                     </p>
-                  )}
 
-                  <div className="mt-3 border-t border-slate-100 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => openServiceForm(org)}
-                      className="flex items-center gap-1.5 rounded-md bg-blue-50 px-2.5 py-1.5 text-[11px] font-semibold text-blue-700 hover:bg-blue-100"
-                    >
-                      <FaConciergeBell />
-                      Add Service
-                    </button>
-                  </div>
-                </article>
-              ))}
+                    {org.description && (
+                      <p className="mt-1 break-words text-[11px] leading-4 text-slate-500">
+                        {org.description}
+                      </p>
+                    )}
+
+                    {/* Existing Services */}
+                    <div className="mt-3 border-t border-slate-100 pt-2">
+                      <div className="mb-2 flex items-center justify-between">
+                        <h4 className="text-[11px] font-semibold text-slate-700">
+                          Services
+                        </h4>
+
+                        <span className="text-[10px] text-slate-500">
+                          {services.length}
+                        </span>
+                      </div>
+
+                      {loadingServices[organizationId] ? (
+                        <p className="text-[11px] text-slate-500">
+                          Loading services...
+                        </p>
+                      ) : services.length === 0 ? (
+                        <p className="text-[11px] text-slate-500">
+                          No services added yet.
+                        </p>
+                      ) : (
+                        <div className="space-y-1.5">
+                          {services.map((service) => (
+                            <div
+                              key={service._id}
+                              className="flex items-center justify-between gap-2 rounded-md bg-slate-50 px-2 py-1.5"
+                            >
+                              <div className="min-w-0">
+                                <p className="break-words text-[11px] font-medium text-slate-800">
+                                  {service.name}
+                                </p>
+
+                                {service.description && (
+                                  <p className="mt-0.5 break-words text-[10px] text-slate-500">
+                                    {service.description}
+                                  </p>
+                                )}
+                              </div>
+
+                              <span className="shrink-0 rounded-full bg-blue-50 px-2 py-1 text-[10px] text-blue-700">
+                                {service.estimatedDuration} min
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Add Service Button */}
+                    <div className="mt-3 border-t border-slate-100 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => openServiceForm(org)}
+                        className="flex items-center gap-1.5 rounded-md bg-blue-50 px-2.5 py-1.5 text-[11px] font-semibold text-blue-700 hover:bg-blue-100"
+                      >
+                        <FaConciergeBell />
+                        Add Service
+                      </button>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           )}
         </section>
