@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import {
   FaBuilding,
@@ -6,6 +5,10 @@ import {
   FaPlus,
   FaTimes,
   FaConciergeBell,
+  FaUserPlus,
+  FaUsers,
+  FaEye,
+  FaEyeSlash,
 } from "react-icons/fa";
 import api from "../api/axios";
 
@@ -22,6 +25,13 @@ const initialServiceForm = {
   estimatedDuration: "5",
 };
 
+const initialStaffForm = {
+  name: "",
+  email: "",
+  phone: "",
+  password: "",
+};
+
 const AdminDashboard = () => {
   const [organizations, setOrganizations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,16 +42,29 @@ const AdminDashboard = () => {
   const [organizationForm, setOrganizationForm] = useState(
     initialOrganizationForm
   );
-  const [submittingOrganization, setSubmittingOrganization] =
-    useState(false);
+  const [submittingOrganization, setSubmittingOrganization] = useState(false);
 
   const [selectedOrganization, setSelectedOrganization] = useState(null);
   const [serviceForm, setServiceForm] = useState(initialServiceForm);
   const [submittingService, setSubmittingService] = useState(false);
 
-  // Services belonging to each organization
   const [servicesByOrganization, setServicesByOrganization] = useState({});
   const [loadingServices, setLoadingServices] = useState({});
+
+  // Create staff
+  const [showStaffForm, setShowStaffForm] = useState(false);
+  const [staffOrganization, setStaffOrganization] = useState(null);
+  const [staffForm, setStaffForm] = useState(initialStaffForm);
+  const [submittingStaff, setSubmittingStaff] = useState(false);
+  const [showStaffPassword, setShowStaffPassword] = useState(false);
+
+  // Assign existing staff
+  const [showAssignForm, setShowAssignForm] = useState(false);
+  const [assignOrganization, setAssignOrganization] = useState(null);
+  const [staffMembers, setStaffMembers] = useState([]);
+  const [loadingStaff, setLoadingStaff] = useState(false);
+  const [selectedStaffId, setSelectedStaffId] = useState("");
+  const [submittingAssignment, setSubmittingAssignment] = useState(false);
 
   // Load services for one organization
   const loadServices = async (organizationId) => {
@@ -55,11 +78,9 @@ const AdminDashboard = () => {
         `/services/organization/${organizationId}`
       );
 
-      const services = response.data.services || [];
-
       setServicesByOrganization((prev) => ({
         ...prev,
-        [organizationId]: services,
+        [organizationId]: response.data.services || [],
       }));
     } catch (err) {
       console.error("Load services error:", err.response || err);
@@ -105,10 +126,31 @@ const AdminDashboard = () => {
     }
   };
 
+  // Load staff accounts for dropdown
+  const loadStaffMembers = async () => {
+    try {
+      setLoadingStaff(true);
+      setError("");
+
+      const response = await api.get("/users/staff");
+      setStaffMembers(response.data.staff || []);
+    } catch (err) {
+      console.error("Load staff error:", err.response || err);
+
+      setError(
+        err.response?.data?.message ||
+          "Unable to load staff members."
+      );
+    } finally {
+      setLoadingStaff(false);
+    }
+  };
+
   useEffect(() => {
     loadOrganizations();
   }, []);
 
+  // Organization input handler
   const handleOrganizationChange = (e) => {
     const { name, value } = e.target;
 
@@ -146,10 +188,19 @@ const AdminDashboard = () => {
     }
   };
 
+  // Open Add Service form
   const openServiceForm = (organization) => {
     setSelectedOrganization(organization);
     setServiceForm(initialServiceForm);
+
     setShowOrganizationForm(false);
+    setShowStaffForm(false);
+    setShowAssignForm(false);
+
+    setStaffOrganization(null);
+    setAssignOrganization(null);
+
+    setShowStaffPassword(false);
     setError("");
     setSuccess("");
   };
@@ -160,6 +211,9 @@ const AdminDashboard = () => {
 
     if (!selectedOrganization) return;
 
+    const organizationId =
+      selectedOrganization._id || selectedOrganization.id;
+
     try {
       setSubmittingService(true);
       setError("");
@@ -169,21 +223,18 @@ const AdminDashboard = () => {
         name: serviceForm.name.trim(),
         description: serviceForm.description.trim(),
         estimatedDuration: Number(serviceForm.estimatedDuration),
-        organizationId:
-          selectedOrganization._id || selectedOrganization.id,
+        organizationId,
       });
 
       const organizationName = selectedOrganization.name;
-      const organizationId =
-        selectedOrganization._id || selectedOrganization.id;
 
       setSelectedOrganization(null);
       setServiceForm(initialServiceForm);
+
       setSuccess(
         `Service created successfully for ${organizationName}.`
       );
 
-      // Refresh the services list after creation
       await loadServices(organizationId);
     } catch (err) {
       console.error("Create service error:", err.response || err);
@@ -197,13 +248,128 @@ const AdminDashboard = () => {
     }
   };
 
+  // Open Create Staff form
+  const openCreateStaffForm = (organization) => {
+    setStaffOrganization(organization);
+    setStaffForm(initialStaffForm);
+    setShowStaffPassword(false);
+
+    setShowStaffForm(true);
+    setShowAssignForm(false);
+    setShowOrganizationForm(false);
+    setSelectedOrganization(null);
+
+    setAssignOrganization(null);
+    setError("");
+    setSuccess("");
+  };
+
+  // Create staff and assign to organization
+  const handleCreateStaff = async (e) => {
+    e.preventDefault();
+
+    if (!staffOrganization) return;
+
+    try {
+      setSubmittingStaff(true);
+      setError("");
+      setSuccess("");
+
+      await api.post("/users/staff", {
+        name: staffForm.name.trim(),
+        email: staffForm.email.trim(),
+        phone: staffForm.phone.trim(),
+        password: staffForm.password,
+        organizationId:
+          staffOrganization._id || staffOrganization.id,
+      });
+
+      const organizationName = staffOrganization.name;
+
+      setStaffForm(initialStaffForm);
+      setStaffOrganization(null);
+      setShowStaffForm(false);
+      setShowStaffPassword(false);
+
+      setSuccess(
+        `Staff account created and assigned to ${organizationName}.`
+      );
+
+      await loadStaffMembers();
+    } catch (err) {
+      console.error("Create staff error:", err.response || err);
+
+      setError(
+        err.response?.data?.message ||
+          "Unable to create staff account."
+      );
+    } finally {
+      setSubmittingStaff(false);
+    }
+  };
+
+  // Open Assign Existing Staff form
+  const openAssignStaffForm = async (organization) => {
+    setAssignOrganization(organization);
+    setSelectedStaffId("");
+
+    setShowAssignForm(true);
+    setShowStaffForm(false);
+    setShowOrganizationForm(false);
+    setSelectedOrganization(null);
+
+    setStaffOrganization(null);
+    setShowStaffPassword(false);
+    setError("");
+    setSuccess("");
+
+    await loadStaffMembers();
+  };
+
+  // Assign existing staff
+  const handleAssignStaff = async (e) => {
+    e.preventDefault();
+
+    if (!assignOrganization || !selectedStaffId) return;
+
+    try {
+      setSubmittingAssignment(true);
+      setError("");
+      setSuccess("");
+
+      const response = await api.patch("/users/staff/assign", {
+        staffUserId: selectedStaffId,
+        organizationId:
+          assignOrganization._id || assignOrganization.id,
+      });
+
+      setSuccess(
+        response.data.message ||
+          `Staff assigned to ${assignOrganization.name} successfully.`
+      );
+
+      setSelectedStaffId("");
+      setAssignOrganization(null);
+      setShowAssignForm(false);
+    } catch (err) {
+      console.error("Assign staff error:", err.response || err);
+
+      setError(
+        err.response?.data?.message ||
+          "Unable to assign staff member."
+      );
+    } finally {
+      setSubmittingAssignment(false);
+    }
+  };
+
   const activeCount = organizations.filter(
     (org) => org.isActive
   ).length;
 
   return (
     <main className="min-h-screen bg-[#EAF3FB] px-3 py-3">
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-5xl">
         {/* Header */}
         <header className="mb-4 flex items-center justify-between gap-2">
           <div>
@@ -216,7 +382,7 @@ const AdminDashboard = () => {
             </h1>
 
             <p className="text-xs text-slate-600">
-              Manage organizations and services.
+              Manage organizations, services, and staff.
             </p>
           </div>
 
@@ -234,8 +400,13 @@ const AdminDashboard = () => {
             <button
               type="button"
               onClick={() => {
-                setShowOrganizationForm(!showOrganizationForm);
+                setShowOrganizationForm((prev) => !prev);
+                setShowStaffForm(false);
+                setShowAssignForm(false);
                 setSelectedOrganization(null);
+                setStaffOrganization(null);
+                setAssignOrganization(null);
+                setShowStaffPassword(false);
                 setError("");
                 setSuccess("");
               }}
@@ -251,6 +422,13 @@ const AdminDashboard = () => {
         {success && (
           <div className="mb-3 rounded-md bg-green-50 px-3 py-2 text-xs text-green-700">
             {success}
+          </div>
+        )}
+
+        {/* Error message */}
+        {error && (
+          <div className="mb-3 rounded-md bg-red-50 px-3 py-2 text-xs text-red-700">
+            {error}
           </div>
         )}
 
@@ -331,12 +509,6 @@ const AdminDashboard = () => {
                 />
               </div>
 
-              {error && (
-                <p className="rounded-md bg-red-50 p-2 text-xs text-red-700">
-                  {error}
-                </p>
-              )}
-
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
@@ -351,16 +523,263 @@ const AdminDashboard = () => {
                   disabled={submittingOrganization}
                   className="rounded-md bg-blue-600 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
                 >
-                  {submittingOrganization
-                    ? "Creating..."
-                    : "Create Organization"}
+                  {submittingOrganization ? "Creating..." : "Create Organization"}
                 </button>
               </div>
             </form>
           </section>
         )}
 
-        {/* Create Service Form */}
+        {/* Create Staff Form */}
+        {showStaffForm && staffOrganization && (
+          <section className="mb-4 rounded-lg border border-green-100 bg-white p-4 shadow-sm">
+            <div className="mb-3 flex items-start justify-between gap-2">
+              <div>
+                <h2 className="text-sm font-bold text-[#101D3A]">
+                  Create Staff
+                </h2>
+
+                <p className="mt-1 text-xs text-slate-500">
+                  Organization: {staffOrganization.name}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowStaffForm(false);
+                  setStaffOrganization(null);
+                  setShowStaffPassword(false);
+                  setError("");
+                }}
+                className="rounded-md p-1 text-slate-500 hover:bg-slate-100"
+                aria-label="Close staff form"
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateStaff} className="space-y-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-700">
+                    Full Name *
+                  </label>
+
+                  <input
+                    value={staffForm.name}
+                    onChange={(e) =>
+                      setStaffForm((prev) => ({
+                        ...prev,
+                        name: e.target.value,
+                      }))
+                    }
+                    required
+                    placeholder="Enter staff name"
+                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-xs outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-700">
+                    Email *
+                  </label>
+
+                  <input
+                    type="email"
+                    value={staffForm.email}
+                    onChange={(e) =>
+                      setStaffForm((prev) => ({
+                        ...prev,
+                        email: e.target.value,
+                      }))
+                    }
+                    required
+                    placeholder="staff@example.com"
+                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-xs outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-700">
+                    Phone
+                  </label>
+
+                  <input
+                    type="tel"
+                    value={staffForm.phone}
+                    onChange={(e) =>
+                      setStaffForm((prev) => ({
+                        ...prev,
+                        phone: e.target.value,
+                      }))
+                    }
+                    placeholder="Phone number"
+                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-xs outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                {/* Password with functional eye icon */}
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-700">
+                    Password * (minimum 8 characters)
+                  </label>
+
+                  <div className="relative">
+                    <input
+                      type={showStaffPassword ? "text" : "password"}
+                      value={staffForm.password}
+                      onChange={(e) =>
+                        setStaffForm((prev) => ({
+                          ...prev,
+                          password: e.target.value,
+                        }))
+                      }
+                      required
+                      minLength={8}
+                      placeholder="Create a password"
+                      className="w-full rounded-md border border-slate-300 px-3 py-2 pr-10 text-xs outline-none focus:border-blue-500"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowStaffPassword((prev) => !prev)
+                      }
+                      className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-500 hover:text-blue-600"
+                      aria-label={
+                        showStaffPassword
+                          ? "Hide password"
+                          : "Show password"
+                      }
+                      title={
+                        showStaffPassword
+                          ? "Hide password"
+                          : "Show password"
+                      }
+                    >
+                      {showStaffPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowStaffForm(false);
+                    setStaffOrganization(null);
+                    setShowStaffPassword(false);
+                    setError("");
+                  }}
+                  className="rounded-md border border-slate-300 px-3 py-2 text-xs"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={submittingStaff}
+                  className="rounded-md bg-green-600 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                >
+                  {submittingStaff ? "Creating..." : "Create & Assign Staff"}
+                </button>
+              </div>
+            </form>
+          </section>
+        )}
+
+        {/* Assign Existing Staff Form */}
+        {showAssignForm && assignOrganization && (
+          <section className="mb-4 rounded-lg border border-indigo-100 bg-white p-4 shadow-sm">
+            <div className="mb-3 flex items-start justify-between gap-2">
+              <div>
+                <h2 className="text-sm font-bold text-[#101D3A]">
+                  Assign Existing Staff
+                </h2>
+
+                <p className="mt-1 text-xs text-slate-500">
+                  Organization: {assignOrganization.name}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAssignForm(false);
+                  setAssignOrganization(null);
+                  setError("");
+                }}
+                className="rounded-md p-1 text-slate-500 hover:bg-slate-100"
+                aria-label="Close assign staff form"
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            <form onSubmit={handleAssignStaff} className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-slate-700">
+                  Staff Member *
+                </label>
+
+                <select
+                  value={selectedStaffId}
+                  onChange={(e) => setSelectedStaffId(e.target.value)}
+                  required
+                  disabled={loadingStaff || staffMembers.length === 0}
+                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-xs outline-none focus:border-blue-500 disabled:bg-slate-50"
+                >
+                  <option value="">
+                    {loadingStaff
+                      ? "Loading staff..."
+                      : staffMembers.length > 0
+                      ? "Select a staff member"
+                      : "No staff accounts found"}
+                  </option>
+
+                  {staffMembers.map((staff) => (
+                    <option
+                      key={staff._id || staff.id}
+                      value={staff._id || staff.id}
+                    >
+                      {staff.name} ({staff.email})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAssignForm(false);
+                    setAssignOrganization(null);
+                    setError("");
+                  }}
+                  className="rounded-md border border-slate-300 px-3 py-2 text-xs"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={
+                    submittingAssignment ||
+                    loadingStaff ||
+                    !selectedStaffId
+                  }
+                  className="rounded-md bg-indigo-600 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                >
+                  {submittingAssignment ? "Assigning..." : "Assign Staff"}
+                </button>
+              </div>
+            </form>
+          </section>
+        )}
+
+        {/* Add Service Form */}
         {selectedOrganization && (
           <section className="mb-4 rounded-lg border border-blue-100 bg-white p-4 shadow-sm">
             <div className="mb-3 flex items-start justify-between gap-2">
@@ -394,7 +813,6 @@ const AdminDashboard = () => {
                 </label>
 
                 <input
-                  name="name"
                   value={serviceForm.name}
                   onChange={(e) =>
                     setServiceForm((prev) => ({
@@ -414,7 +832,6 @@ const AdminDashboard = () => {
                 </label>
 
                 <textarea
-                  name="description"
                   value={serviceForm.description}
                   onChange={(e) =>
                     setServiceForm((prev) => ({
@@ -437,7 +854,6 @@ const AdminDashboard = () => {
                   type="number"
                   min="1"
                   step="1"
-                  name="estimatedDuration"
                   value={serviceForm.estimatedDuration}
                   onChange={(e) =>
                     setServiceForm((prev) => ({
@@ -449,12 +865,6 @@ const AdminDashboard = () => {
                   className="w-full rounded-md border border-slate-300 px-3 py-2 text-xs outline-none focus:border-blue-500"
                 />
               </div>
-
-              {error && (
-                <p className="rounded-md bg-red-50 p-2 text-xs text-red-700">
-                  {error}
-                </p>
-              )}
 
               <div className="flex justify-end gap-2">
                 <button
@@ -516,12 +926,6 @@ const AdminDashboard = () => {
             </span>
           </div>
 
-          {!showOrganizationForm && !selectedOrganization && error && (
-            <p className="m-3 rounded-md bg-red-50 p-2 text-xs text-red-700">
-              {error}
-            </p>
-          )}
-
           {loading ? (
             <p className="p-5 text-center text-xs text-slate-500">
               Loading organizations...
@@ -542,7 +946,8 @@ const AdminDashboard = () => {
             <div className="grid grid-cols-1 gap-2.5 p-3 sm:grid-cols-2">
               {organizations.map((org) => {
                 const organizationId = org._id || org.id;
-                const services = servicesByOrganization[organizationId] || [];
+                const services =
+                  servicesByOrganization[organizationId] || [];
 
                 return (
                   <article
@@ -633,15 +1038,36 @@ const AdminDashboard = () => {
                       )}
                     </div>
 
-                    {/* Add Service Button */}
-                    <div className="mt-3 border-t border-slate-100 pt-2">
+                    {/* Organization Actions */}
+                    <div className="mt-3 flex flex-wrap gap-2 border-t border-slate-100 pt-2">
                       <button
                         type="button"
                         onClick={() => openServiceForm(org)}
-                        className="flex items-center gap-1.5 rounded-md bg-blue-50 px-2.5 py-1.5 text-[11px] font-semibold text-blue-700 hover:bg-blue-100"
+                        disabled={!org.isActive}
+                        className="flex items-center gap-1.5 rounded-md bg-blue-50 px-2.5 py-1.5 text-[11px] font-semibold text-blue-700 hover:bg-blue-100 disabled:opacity-50"
                       >
                         <FaConciergeBell />
                         Add Service
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => openCreateStaffForm(org)}
+                        disabled={!org.isActive}
+                        className="flex items-center gap-1.5 rounded-md bg-green-50 px-2.5 py-1.5 text-[11px] font-semibold text-green-700 hover:bg-green-100 disabled:opacity-50"
+                      >
+                        <FaUserPlus />
+                        Create Staff
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => openAssignStaffForm(org)}
+                        disabled={!org.isActive}
+                        className="flex items-center gap-1.5 rounded-md bg-indigo-50 px-2.5 py-1.5 text-[11px] font-semibold text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
+                      >
+                        <FaUsers />
+                        Assign Staff
                       </button>
                     </div>
                   </article>

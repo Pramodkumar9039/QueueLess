@@ -239,5 +239,24 @@ const assignExistingStaff = async (req, res) => {
   }
 };
 
+const getAllStaff = async (req, res) => {
+  try {
+    const staff = await User.find({ role: "staff" })
+      .select("name email phone")
+      .sort({ name: 1 });
 
-module.exports = { createUser , createStaff , assignExistingStaff };
+    return res.status(200).json({
+      count: staff.length,
+      staff,
+    });
+  } catch (error) {
+    console.error("Get staff error:", error.message);
+
+    return res.status(500).json({
+      message: "Failed to fetch staff members",
+    });
+  }
+};
+
+
+module.exports = { createUser , createStaff , assignExistingStaff , getAllStaff };

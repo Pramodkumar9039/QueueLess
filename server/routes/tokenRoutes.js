@@ -10,28 +10,37 @@ const {
   getMyTokenStatus,
   getMyActiveToken,
   getQueueTokens,
+  getCustomerQueueTokens,
   callNextCustomer,
   completeToken,
 } = require("../controllers/tokenController");
 
-// Create a token for the logged-in customer
+// Create a token for the logged-in customer.
 router.post("/", authMiddleware, createToken);
 
-// Get the current customer's active token in a queue
+// Get the logged-in customer's active token in a queue.
 router.get(
   "/queue/:queueId/my-active",
   authMiddleware,
   getMyActiveToken
 );
 
-// Get all tokens for a queue
+// Customer: get public queue token numbers and statuses.
+router.get(
+  "/queue/:queueId/customer-tokens",
+  authMiddleware,
+  getCustomerQueueTokens
+);
+
+// Staff/admin: get all queue tokens, including customer names.
 router.get(
   "/queue/:queueId/tokens",
   authMiddleware,
+  staffMiddleware,
   getQueueTokens
 );
 
-// Staff: call the next waiting customer
+// Staff: call the next waiting customer.
 router.post(
   "/queue/:queueId/call-next",
   authMiddleware,
@@ -39,14 +48,14 @@ router.post(
   callNextCustomer
 );
 
-// Get the logged-in customer's token status
+// Get the logged-in customer's token status.
 router.get(
   "/:tokenId/status",
   authMiddleware,
   getMyTokenStatus
 );
 
-// Staff: complete a serving token
+// Staff: complete a serving token.
 router.patch(
   "/:tokenId/complete",
   authMiddleware,

@@ -130,7 +130,9 @@ const getMyActiveToken = async (req, res) => {
     const { queueId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(queueId)) {
-      return res.status(400).json({ message: "Invalid queue ID" });
+      return res.status(400).json({
+        message: "Invalid queue ID",
+      });
     }
 
     const token = await Token.findOne({
@@ -140,7 +142,9 @@ const getMyActiveToken = async (req, res) => {
     }).sort({ createdAt: -1 });
 
     if (!token) {
-      return res.status(404).json({ message: "No active token found" });
+      return res.status(404).json({
+        message: "No active token found",
+      });
     }
 
     return res.status(200).json({
@@ -162,7 +166,9 @@ const getMyTokenStatus = async (req, res) => {
     const { tokenId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(tokenId)) {
-      return res.status(400).json({ message: "Invalid token ID" });
+      return res.status(400).json({
+        message: "Invalid token ID",
+      });
     }
 
     const token = await Token.findOne({
@@ -177,7 +183,9 @@ const getMyTokenStatus = async (req, res) => {
     });
 
     if (!token) {
-      return res.status(404).json({ message: "Token not found" });
+      return res.status(404).json({
+        message: "Token not found",
+      });
     }
 
     if (!token.queue) {
@@ -207,8 +215,10 @@ const getMyTokenStatus = async (req, res) => {
         date: token.queue.date,
         status: token.queue.status,
       },
-      peopleAhead,
-      estimatedWaitingMinutes: peopleAhead * duration,
+      peopleAhead:
+        token.status === "waiting" ? peopleAhead : 0,
+      estimatedWaitingMinutes:
+        token.status === "waiting" ? peopleAhead * duration : 0,
     });
   } catch (error) {
     console.error("Get token status error:", error);
@@ -219,19 +229,70 @@ const getMyTokenStatus = async (req, res) => {
   }
 };
 
+// Customer: view public queue information without customer names or private data.
+const getCustomerQueueTokens = async (req, res) => {
+  try {
+    const { queueId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(queueId)) {
+      return res.status(400).json({
+        message: "Invalid queue ID",
+      });
+    }
+
+    const queue = await Queue.findById(queueId).select(
+      "status date service"
+    );
+
+    if (!queue) {
+      return res.status(404).json({
+        message: "Queue not found",
+      });
+    }
+
+    const tokens = await Token.find({
+      queue: queue._id,
+      status: { $in: ["waiting", "serving", "completed"] },
+    })
+      .select("tokenNumber status")
+      .sort({ tokenNumber: 1 })
+      .lean();
+
+    return res.status(200).json({
+      message: "Customer queue information fetched successfully",
+      queue: {
+        id: queue._id,
+        status: queue.status,
+        date: queue.date,
+      },
+      tokens,
+    });
+  } catch (error) {
+    console.error("Get customer queue tokens error:", error);
+
+    return res.status(500).json({
+      message: "Unable to fetch customer queue information",
+    });
+  }
+};
+
 // Staff: call the next waiting customer.
 const callNextCustomer = async (req, res) => {
   try {
     const { queueId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(queueId)) {
-      return res.status(400).json({ message: "Invalid queue ID" });
+      return res.status(400).json({
+        message: "Invalid queue ID",
+      });
     }
 
     const queue = await Queue.findById(queueId);
 
     if (!queue) {
-      return res.status(404).json({ message: "Queue not found" });
+      return res.status(404).json({
+        message: "Queue not found",
+      });
     }
 
     if (!(await canManageQueue(queue, req.user))) {
@@ -241,7 +302,9 @@ const callNextCustomer = async (req, res) => {
     }
 
     if (queue.status !== "open") {
-      return res.status(400).json({ message: "Queue is not open" });
+      return res.status(400).json({
+        message: "Queue is not open",
+      });
     }
 
     const currentToken = await Token.findOne({
@@ -287,19 +350,25 @@ const completeToken = async (req, res) => {
     const { tokenId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(tokenId)) {
-      return res.status(400).json({ message: "Invalid token ID" });
+      return res.status(400).json({
+        message: "Invalid token ID",
+      });
     }
 
     const token = await Token.findById(tokenId);
 
     if (!token) {
-      return res.status(404).json({ message: "Token not found" });
+      return res.status(404).json({
+        message: "Token not found",
+      });
     }
 
     const queue = await Queue.findById(token.queue);
 
     if (!queue) {
-      return res.status(404).json({ message: "Queue not found" });
+      return res.status(404).json({
+        message: "Queue not found",
+      });
     }
 
     if (!(await canManageQueue(queue, req.user))) {
@@ -336,13 +405,17 @@ const getQueueTokens = async (req, res) => {
     const { queueId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(queueId)) {
-      return res.status(400).json({ message: "Invalid queue ID" });
+      return res.status(400).json({
+        message: "Invalid queue ID",
+      });
     }
 
     const queue = await Queue.findById(queueId);
 
     if (!queue) {
-      return res.status(404).json({ message: "Queue not found" });
+      return res.status(404).json({
+        message: "Queue not found",
+      });
     }
 
     if (!(await canManageQueue(queue, req.user))) {
@@ -374,6 +447,7 @@ module.exports = {
   createToken,
   getMyActiveToken,
   getMyTokenStatus,
+  getCustomerQueueTokens,
   callNextCustomer,
   completeToken,
   getQueueTokens,
