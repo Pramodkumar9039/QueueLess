@@ -20,7 +20,9 @@ const Navbar = () => {
     }`;
 
   return (
-    <header className="relative z-50 w-full border-b border-[#D9DEE7] bg-white">
+    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md
+           shadow-[0_4px_20px_rgba(56,73,89,0.10)]
+           border-b border-[#E0EAF5]">
       <nav className="mx-auto flex min-h-[64px] max-w-[1440px] items-center justify-between gap-4 px-5 sm:px-8">
 
         {/* Logo */}
