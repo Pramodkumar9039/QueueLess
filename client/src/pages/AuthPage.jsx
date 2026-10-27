@@ -156,7 +156,7 @@ const AuthPage = ({ initialTab = "login" }) => {
           </button>
         </div>
 
-        {/* Compact authentication card */}
+        {/* Compact authentication card for us */}
         <div className="rounded-xl border border-white/80 bg-white px-4 py-4 shadow-[0_12px_35px_rgba(63,95,140,0.12)]">
           <div className="mb-3 text-center">
             <h1 className="text-[18px] font-bold tracking-tight text-[#111d37]">
