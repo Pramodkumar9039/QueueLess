@@ -80,9 +80,9 @@ const Dashboard = () => {
       return;
     }
 
-    const response = await api.get(
-      `/tokens/queue/${currentQueueId}/tokens`
-    );
+  const response = await api.get(
+  `/tokens/queue/${currentQueueId}/customer-tokens`
+);
 
     setQueueTokens(response.data.tokens || []);
   }, [currentQueueId]);
