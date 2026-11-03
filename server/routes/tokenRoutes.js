@@ -1,3 +1,4 @@
+
 const express = require("express");
 const router = express.Router();
 
@@ -8,6 +9,7 @@ const {
   createToken,
   getMyTokenStatus,
   getMyActiveToken,
+  getMyCurrentActiveToken,
   getQueueTokens,
   getCustomerQueueTokens,
   callNextCustomer,
@@ -17,7 +19,14 @@ const {
 // Create a token for the logged-in customer.
 router.post("/", authMiddleware, createToken);
 
-// Get the logged-in customer's active token in a queue.
+// Get the logged-in customer's active token across all queues.
+router.get(
+  "/my-active",
+  authMiddleware,
+  getMyCurrentActiveToken
+);
+
+// Get the logged-in customer's active token in a specific queue.
 router.get(
   "/queue/:queueId/my-active",
   authMiddleware,

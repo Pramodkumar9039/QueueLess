@@ -1,6 +1,13 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
+import {
+  FiX,
+  FiMapPin,
+  FiClock,
+  FiUsers,
+  FiAlertCircle,
+} from "react-icons/fi";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 
@@ -19,23 +26,32 @@ const JoinQueue = () => {
   const [joining, setJoining] = useState(false);
   const [error, setError] = useState("");
 
-  // Fetch the queue's latest status.
+  // Fetch latest queue status.
   const refreshQueueStatus = useCallback(async () => {
     if (!serviceId) return;
 
     try {
-      const response = await api.get(`/queues/service/${serviceId}`);
-      const queue = response.data.queue || response.data.data?.queue || response.data;
+      const response = await api.get(
+        `/queues/service/${serviceId}`
+      );
+
+      const queue =
+        response.data.queue ||
+        response.data.data?.queue ||
+        response.data;
 
       if (queue?._id || queue?.id) {
         setQueueId(queue._id || queue.id);
-        setQueueStatus(String(queue.status || "open").toLowerCase());
+        setQueueStatus(
+          String(queue.status || "open").toLowerCase()
+        );
       }
     } catch (err) {
       console.error("Unable to refresh queue status:", err);
     }
   }, [serviceId]);
 
+  // Fetch organization, service and queue details.
   useEffect(() => {
     let cancelled = false;
 
@@ -45,8 +61,11 @@ const JoinQueue = () => {
         setError("");
 
         const orgResponse = await api.get("/organizations");
+
         const organizations =
-          orgResponse.data.organizations || orgResponse.data;
+          orgResponse.data.organizations ||
+          orgResponse.data.data?.organizations ||
+          orgResponse.data;
 
         let foundService = null;
         let foundOrganization = null;
@@ -57,7 +76,8 @@ const JoinQueue = () => {
           );
 
           const orgServices =
-            servicesResponse.data.services || servicesResponse.data;
+            servicesResponse.data.services ||
+            servicesResponse.data;
 
           const match = orgServices.find(
             (item) => String(item._id || item.id) === serviceId
@@ -98,11 +118,14 @@ const JoinQueue = () => {
         }
 
         setQueueId(queue._id || queue.id);
-        setQueueStatus(String(queue.status || "open").toLowerCase());
+        setQueueStatus(
+          String(queue.status || "open").toLowerCase()
+        );
         setPeopleAhead(0);
       } catch (err) {
         if (!cancelled) {
           console.error("Unable to load queue details:", err);
+
           setError(
             err.response?.data?.message ||
               "Unable to load service and queue details."
@@ -120,7 +143,7 @@ const JoinQueue = () => {
     };
   }, [serviceId]);
 
-  // Keep the queue status updated while this page is open.
+  // Keep queue status updated every 5 seconds.
   useEffect(() => {
     if (!serviceId || loading) return undefined;
 
@@ -131,6 +154,7 @@ const JoinQueue = () => {
     return () => clearInterval(intervalId);
   }, [serviceId, loading, refreshQueueStatus]);
 
+  // Join queue.
   const handleJoinQueue = async () => {
     if (!token) {
       navigate("/login", {
@@ -144,15 +168,17 @@ const JoinQueue = () => {
     }
 
     if (!queueId) {
-      setError("Queue information is not ready. Please refresh and try again.");
+      setError(
+        "Queue information is not ready. Please refresh and try again."
+      );
       return;
     }
 
-    // Refresh status immediately before attempting to join.
     try {
       setJoining(true);
       setError("");
 
+      // Refresh status before joining.
       const queueResponse = await api.get(
         `/queues/service/${serviceId}`
       );
@@ -169,7 +195,9 @@ const JoinQueue = () => {
       setQueueStatus(latestStatus);
 
       if (latestStatus === "paused") {
-        setError("This queue is temporarily paused. Please try again later.");
+        setError(
+          "This queue is temporarily paused. Please try again later."
+        );
         return;
       }
 
@@ -180,7 +208,7 @@ const JoinQueue = () => {
 
       let createdToken;
 
-      // Check whether the customer already has an active token.
+      // Check for an existing active token.
       try {
         const existingResponse = await api.get(
           `/tokens/queue/${queueId}/my-active`
@@ -221,24 +249,36 @@ const JoinQueue = () => {
     }
   };
 
+  const isPaused = queueStatus === "paused";
+  const isClosed = queueStatus === "closed";
+  const isUnavailable = !queueId || isPaused || isClosed;
+
+  const organizationImage =
+    organization?.image ||
+    organization?.imageUrl ||
+    "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=300&q=80";
+
+  // Loading state.
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#EAF3FB] p-4">
-        <div className="rounded-xl bg-white px-8 py-6 text-sm text-[#52647E] shadow">
+      <main className="flex min-h-[calc(100vh-120px)] items-center justify-center rounded-xl bg-[#EAF3FB] p-4">
+        <div className="rounded-xl bg-white px-8 py-6 text-sm text-[#52647E] shadow-sm">
           Loading queue details...
         </div>
       </main>
     );
   }
 
+  // Error state.
   if (error && (!service || !organization)) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#EAF3FB] p-4">
-        <div className="rounded-xl bg-white p-8 text-center shadow">
+      <main className="flex min-h-[calc(100vh-120px)] items-center justify-center rounded-xl bg-[#EAF3FB] p-4">
+        <div className="rounded-xl border border-[#E5EBF3] bg-white p-8 text-center shadow-sm">
           <p className="text-sm text-red-600">{error}</p>
+
           <Link
             to="/"
-            className="mt-4 inline-block cursor-pointer text-blue-600 hover:underline"
+            className="mt-4 inline-block text-sm text-blue-600 hover:underline"
           >
             Back to Home
           </Link>
@@ -247,15 +287,16 @@ const JoinQueue = () => {
     );
   }
 
-  const isPaused = queueStatus === "paused";
-  const isClosed = queueStatus === "closed";
-  const isUnavailable = !queueId || isPaused || isClosed;
-
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#F0F7FE] via-[#E1EFFB] to-[#D6E8F8] px-4 py-10 sm:py-16">
-      <div className="mx-auto max-w-md">
+    <main className="flex min-h-[calc(100vh-120px)] w-full items-center justify-center rounded-xl bg-gradient-to-br from-[#F0F7FE] via-[#E1EFFB] to-[#D6E8F8] px-3 py-6 sm:px-5">
+
+      {/* Join Queue Card */}
+      <div className="mx-auto w-full max-w-[500px]">
+
         <section className="overflow-hidden rounded-2xl border border-white/80 bg-white shadow-[0_20px_60px_rgba(44,78,115,0.16)]">
-          <div className="flex items-center justify-between border-b border-[#E9EEF5] px-6 py-4">
+
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-[#E9EEF5] px-5 py-3.5 sm:px-6">
             <h1 className="text-lg font-bold text-[#101B35]">
               Join Queue
             </h1>
@@ -263,31 +304,30 @@ const JoinQueue = () => {
             <Link
               to={`/organizations/${organization._id}`}
               aria-label="Close"
-              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-xl text-[#526078] transition hover:bg-[#F0F5FB]"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-lg text-[#526078] transition hover:bg-[#F0F5FB]"
             >
-              ×
+              <FiX size={17} />
             </Link>
           </div>
 
           <div className="p-5 sm:p-6">
+
+            {/* Organization Details */}
             <div className="flex items-center gap-4">
               <img
-                src={
-                  organization.image ||
-                  organization.imageUrl ||
-                  "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=300&q=80"
-                }
+                src={organizationImage}
                 alt={organization.name}
-                className="h-[88px] w-[96px] shrink-0 rounded-xl border border-[#E6EDF5] object-cover"
+                className="h-[88px] w-[104px] shrink-0 rounded-xl border border-[#E6EDF5] object-cover"
               />
 
               <div className="min-w-0">
-                <h2 className="text-lg font-bold text-[#101B35]">
+                <h2 className="text-lg font-bold leading-6 text-[#101B35]">
                   {organization.name}
                 </h2>
 
                 <span className="mt-1 inline-flex rounded-full bg-[#EAF3FF] px-2.5 py-1 text-xs font-medium text-[#4779C5]">
-                  ♙ {organization.type || "Organization"}
+                  <FiMapPin className="mr-1 mt-0.5" size={11} />
+                  {organization.type || "Organization"}
                 </span>
 
                 <p className="mt-2 text-sm font-medium text-[#526078]">
@@ -296,67 +336,65 @@ const JoinQueue = () => {
               </div>
             </div>
 
-            {/* Queue status */}
+            {/* Queue Status */}
             {isPaused && (
               <div
                 role="status"
-                className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4"
+                className="mt-5 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-800"
               >
-                <p className="font-semibold text-amber-800">
-                  Queue Temporarily Paused
-                </p>
-                <p className="mt-1 text-sm text-amber-700">
-                  The staff has temporarily paused this queue. You can join
-                  when the queue resumes.
-                </p>
+                <FiAlertCircle size={15} />
+                Queue is temporarily paused.
               </div>
             )}
 
             {isClosed && (
               <div
                 role="status"
-                className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4"
+                className="mt-5 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-sm text-red-700"
               >
-                <p className="font-semibold text-red-800">
-                  Queue Closed
-                </p>
-                <p className="mt-1 text-sm text-red-700">
-                  This queue is currently closed and cannot accept new tokens.
-                </p>
+                <FiAlertCircle size={15} />
+                Queue is currently closed.
               </div>
             )}
 
             {queueStatus === "open" && (
-              <div className="mt-5 flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
-                <span className="h-2 w-2 rounded-full bg-green-500" />
+              <div
+                role="status"
+                className="mt-5 flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2.5 text-sm text-green-700"
+              >
+                <span className="h-2 w-2 shrink-0 rounded-full bg-green-500" />
                 Queue is open and accepting customers.
               </div>
             )}
 
-            <div className="mt-5 grid grid-cols-2 gap-3 rounded-xl bg-[#EAF3FF] p-4">
+            {/* Queue Statistics */}
+            <div className="mt-5 grid grid-cols-2 gap-3 rounded-xl bg-[#EAF3FF] p-4 sm:p-5">
+
               <div>
                 <p className="flex items-center gap-2 text-xs text-[#526B91]">
-                  <span className="text-lg text-[#1768F2]">◷</span>
+                  <FiClock size={16} className="text-[#1768F2]" />
                   Estimated Waiting Time
                 </p>
 
-                <p className="mt-1 pl-7 text-base font-bold text-[#101B35]">
+                <p className="mt-2 pl-6 text-base font-bold text-[#101B35]">
                   ~{estimatedWait} minutes
                 </p>
               </div>
 
               <div>
                 <p className="flex items-center gap-2 text-xs text-[#526B91]">
-                  <span className="text-lg text-[#1768F2]">♙</span>
+                  <FiUsers size={16} className="text-[#1768F2]" />
                   People Ahead
                 </p>
 
-                <p className="mt-1 pl-7 text-base font-bold text-[#101B35]">
+                <p className="mt-2 pl-6 text-base font-bold text-[#101B35]">
                   {peopleAhead}
                 </p>
               </div>
+
             </div>
 
+            {/* Error Message */}
             {error && (
               <p
                 role="alert"
@@ -366,6 +404,7 @@ const JoinQueue = () => {
               </p>
             )}
 
+            {/* Join Button */}
             <button
               type="button"
               onClick={handleJoinQueue}
@@ -379,12 +418,12 @@ const JoinQueue = () => {
               {joining
                 ? "Joining Queue..."
                 : isPaused
-                  ? "Queue Paused"
-                  : isClosed
-                    ? "Queue Closed"
-                    : !queueId
-                      ? "Queue Unavailable"
-                      : "Join Queue"}
+                ? "Queue Paused"
+                : isClosed
+                ? "Queue Closed"
+                : !queueId
+                ? "Queue Unavailable"
+                : "Join Queue"}
             </button>
 
             {!token && (
@@ -392,6 +431,7 @@ const JoinQueue = () => {
                 Please log in before joining the queue.
               </p>
             )}
+
           </div>
         </section>
       </div>

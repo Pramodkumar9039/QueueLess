@@ -12,18 +12,14 @@ const canManageQueue = async (queue, user) => {
     isActive: true,
   }).select("organization");
 
-  if (!service) {
-    return false;
-  }
+  if (!service) return false;
 
   const organization = await Organization.findOne({
     _id: service.organization,
     isActive: true,
   }).select("owner staff");
 
-  if (!organization) {
-    return false;
-  }
+  if (!organization) return false;
 
   if (user.role === "admin") {
     return organization.owner.toString() === user.userId;
@@ -37,6 +33,18 @@ const canManageQueue = async (queue, user) => {
 
   return false;
 };
+
+// Populate queue, service and organization details.
+const populateTokenDetails = (query) =>
+  query.populate({
+    path: "queue",
+    populate: {
+      path: "service",
+      populate: {
+        path: "organization",
+      },
+    },
+  });
 
 // Create a token for the logged-in customer.
 const createToken = async (req, res) => {
@@ -67,15 +75,16 @@ const createToken = async (req, res) => {
       });
     }
 
+    // Check active tokens across ALL queues.
     const existingToken = await Token.findOne({
-      queue: queue._id,
       customer: customerId,
       status: { $in: ["waiting", "serving"] },
     });
 
     if (existingToken) {
-      return res.status(400).json({
-        message: "You already have an active token in this queue",
+      return res.status(409).json({
+        message:
+          "You already have an active token. Complete or cancel your current queue before joining another.",
         token: existingToken,
       });
     }
@@ -124,7 +133,7 @@ const createToken = async (req, res) => {
   }
 };
 
-// Get the logged-in customer's active token.
+// Get the customer's active token in a particular queue.
 const getMyActiveToken = async (req, res) => {
   try {
     const { queueId } = req.params;
@@ -160,6 +169,35 @@ const getMyActiveToken = async (req, res) => {
   }
 };
 
+// Get the customer's active token across ALL queues.
+const getMyCurrentActiveToken = async (req, res) => {
+  try {
+    const token = await populateTokenDetails(
+      Token.findOne({
+        customer: req.user.userId,
+        status: { $in: ["waiting", "serving"] },
+      }).sort({ createdAt: -1 })
+    );
+
+    if (!token) {
+      return res.status(404).json({
+        message: "No active token found",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Active token found",
+      token,
+    });
+  } catch (error) {
+    console.error("Get current active token error:", error);
+
+    return res.status(500).json({
+      message: "Unable to retrieve your active token",
+    });
+  }
+};
+
 // Get the status of a token belonging to the logged-in customer.
 const getMyTokenStatus = async (req, res) => {
   try {
@@ -171,16 +209,12 @@ const getMyTokenStatus = async (req, res) => {
       });
     }
 
-    const token = await Token.findOne({
-      _id: tokenId,
-      customer: req.user.userId,
-    }).populate({
-      path: "queue",
-      populate: {
-        path: "service",
-        select: "name estimatedDuration",
-      },
-    });
+    const token = await populateTokenDetails(
+      Token.findOne({
+        _id: tokenId,
+        customer: req.user.userId,
+      })
+    );
 
     if (!token) {
       return res.status(404).json({
@@ -204,21 +238,37 @@ const getMyTokenStatus = async (req, res) => {
 
     return res.status(200).json({
       message: "Token status retrieved successfully",
+
       token: {
         id: token._id,
         tokenNumber: token.tokenNumber,
         status: token.status,
         joinedAt: token.joinedAt,
       },
+
       queue: {
         id: token.queue._id,
         date: token.queue.date,
         status: token.queue.status,
+
+        service: token.queue.service
+          ? {
+              _id: token.queue.service._id,
+              name: token.queue.service.name,
+              estimatedDuration:
+                token.queue.service.estimatedDuration,
+              organization: token.queue.service.organization,
+            }
+          : null,
       },
+
       peopleAhead:
         token.status === "waiting" ? peopleAhead : 0,
+
       estimatedWaitingMinutes:
-        token.status === "waiting" ? peopleAhead * duration : 0,
+        token.status === "waiting"
+          ? peopleAhead * duration
+          : 0,
     });
   } catch (error) {
     console.error("Get token status error:", error);
@@ -229,7 +279,7 @@ const getMyTokenStatus = async (req, res) => {
   }
 };
 
-// Customer: view public queue information without customer names or private data.
+// Customer: view public queue information.
 const getCustomerQueueTokens = async (req, res) => {
   try {
     const { queueId } = req.params;
@@ -314,7 +364,8 @@ const callNextCustomer = async (req, res) => {
 
     if (currentToken) {
       return res.status(409).json({
-        message: "Complete the current token before calling the next customer",
+        message:
+          "Complete the current token before calling the next customer",
         token: currentToken,
       });
     }
@@ -322,7 +373,10 @@ const callNextCustomer = async (req, res) => {
     const nextToken = await Token.findOneAndUpdate(
       { queue: queue._id, status: "waiting" },
       { $set: { status: "serving" } },
-      { sort: { tokenNumber: 1 }, returnDocument: "after" }
+      {
+        sort: { tokenNumber: 1 },
+        returnDocument: "after",
+      }
     );
 
     if (!nextToken) {
@@ -344,7 +398,7 @@ const callNextCustomer = async (req, res) => {
   }
 };
 
-// Staff: complete a token only in an assigned organization.
+// Staff: complete a serving token.
 const completeToken = async (req, res) => {
   try {
     const { tokenId } = req.params;
@@ -399,7 +453,7 @@ const completeToken = async (req, res) => {
   }
 };
 
-// Staff: view tokens only for assigned organizations.
+// Staff: view tokens for an assigned organization.
 const getQueueTokens = async (req, res) => {
   try {
     const { queueId } = req.params;
@@ -446,6 +500,7 @@ const getQueueTokens = async (req, res) => {
 module.exports = {
   createToken,
   getMyActiveToken,
+  getMyCurrentActiveToken,
   getMyTokenStatus,
   getCustomerQueueTokens,
   callNextCustomer,

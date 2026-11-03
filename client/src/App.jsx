@@ -21,7 +21,7 @@ import StaffDashboard from "./pages/StaffDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 
 import ProtectedRoute from "./components/ProtectedRoute";
-import Navbar from "./components/Navbar";
+import MainLayout from "./components/MainLayout";
 
 // Allow only staff and admin users.
 const StaffRoute = () => {
@@ -49,45 +49,62 @@ const App = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Navbar />
-
         <Routes>
-          <Route path="/" element={<Home />} />
+
+          {/* Authentication pages - without sidebar */}
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
 
-          <Route
-            path="/organizations/:organizationId"
-            element={<OrganizationDetails />}
-          />
+          {/* Main application layout */}
+          <Route element={<MainLayout />}>
 
-          <Route
-            path="/join-queue/:serviceId"
-            element={<JoinQueue />}
-          />
+            {/* Public pages */}
+            <Route path="/" element={<Home />} />
 
-          <Route
-            path="/queue-success"
-            element={<QueueSuccess />}
-          />
+            <Route
+              path="/organizations/:organizationId"
+              element={<OrganizationDetails />}
+            />
 
-          {/* Routes requiring login */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route
+              path="/join-queue/:serviceId"
+              element={<JoinQueue />}
+            />
 
-            {/* Staff and admin routes */}
-            <Route element={<StaffRoute />}>
-              <Route path="/staff" element={<StaffDashboard />} />
+            <Route
+              path="/queue-success"
+              element={<QueueSuccess />}
+            />
+
+            {/* Routes requiring login */}
+            <Route element={<ProtectedRoute />}>
+              <Route
+                path="/dashboard"
+                element={<Dashboard />}
+              />
+
+              {/* Staff and admin routes */}
+              <Route element={<StaffRoute />}>
+                <Route
+                  path="/staff"
+                  element={<StaffDashboard />}
+                />
+              </Route>
+
+              {/* Admin-only routes */}
+              <Route element={<AdminRoute />}>
+                <Route
+                  path="/admin"
+                  element={<AdminDashboard />}
+                />
+              </Route>
             </Route>
 
-            {/* Admin-only routes */}
-            <Route element={<AdminRoute />}>
-              <Route path="/admin" element={<AdminDashboard />} />
-            </Route>
           </Route>
 
           {/* Unknown URLs return to Home */}
           <Route path="*" element={<Navigate to="/" replace />} />
+
         </Routes>
       </AuthProvider>
     </BrowserRouter>
