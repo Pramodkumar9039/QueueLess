@@ -1,4 +1,3 @@
-
 const mongoose = require("mongoose");
 const Token = require("../models/Token");
 const Queue = require("../models/Queue");
