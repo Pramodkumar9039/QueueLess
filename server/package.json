@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --runInBand",
     "start": "nodemon server.js"
   },
   "keywords": [],
@@ -20,6 +20,15 @@
     "mongoose": "^9.11.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "jest": "^30.5.2",
+    "mongodb": "^7.5.0",
+    "mongodb-memory-server": "^11.3.0",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.3.1"
+  },
+  "overrides": {
+    "mongoose": {
+      "mongodb": "7.5.0"
+    }
   }
 }
