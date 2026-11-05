@@ -52,14 +52,12 @@ const createToken = async (req, res) => {
     const { queueId } = req.body;
     const customerId = req.user.userId;
 
-    // Validate queue ID.
     if (!queueId || !mongoose.Types.ObjectId.isValid(queueId)) {
       return res.status(400).json({
         message: "A valid queue ID is required",
       });
     }
 
-    // Check whether queue exists.
     const queue = await Queue.findById(queueId);
 
     if (!queue) {
@@ -68,7 +66,6 @@ const createToken = async (req, res) => {
       });
     }
 
-    // Check queue status.
     if (queue.status !== "open") {
       return res.status(400).json({
         message:
@@ -107,7 +104,6 @@ const createToken = async (req, res) => {
     }
 
     try {
-      // Create the token.
       const newToken = await Token.create({
         queue: updatedQueue._id,
         customer: customerId,
@@ -119,7 +115,6 @@ const createToken = async (req, res) => {
         token: newToken,
       });
     } catch (error) {
-      // Handle duplicate active token error.
       const isActiveTokenDuplicate =
         error.code === 11000 &&
         (
@@ -140,8 +135,8 @@ const createToken = async (req, res) => {
         });
       }
 
-      // Safely attempt counter rollback for other creation errors.
-      // Token number gaps are acceptable if rollback is not possible.
+      // Safely attempt counter rollback.
+      // Gaps are acceptable if rollback is not possible.
       try {
         await Queue.updateOne(
           {
@@ -371,6 +366,7 @@ const callNextCustomer = async (req, res) => {
       });
     }
 
+    // Initial queue existence and authorization checks.
     const queue = await Queue.findById(queueId);
 
     if (!queue) {
@@ -385,39 +381,124 @@ const callNextCustomer = async (req, res) => {
       });
     }
 
-    if (queue.status !== "open") {
-      return res.status(400).json({
+    // Transaction coordinates all call-next operations
+    // and verifies the queue is still open.
+    const outcome = await mongoose.connection.transaction(
+      async (session) => {
+        // Acquire a write on the queue document.
+        // Concurrent calls and queue status updates must
+        // coordinate through this same document.
+        const updatedQueue = await Queue.findOneAndUpdate(
+          {
+            _id: queueId,
+            status: "open",
+          },
+          {
+            $inc: {
+              callNextVersion: 1,
+            },
+          },
+          {
+            session,
+            returnDocument: "after",
+          }
+        );
+
+        if (!updatedQueue) {
+          const existingQueue = await Queue.findById(queueId)
+            .select("status")
+            .session(session);
+
+          if (!existingQueue) {
+            return {
+              type: "not_found",
+            };
+          }
+
+          return {
+            type: "queue_unavailable",
+          };
+        }
+
+        // Check for an existing serving token inside transaction.
+        const currentToken = await Token.findOne({
+          queue: updatedQueue._id,
+          status: "serving",
+        })
+          .session(session)
+          .exec();
+
+        if (currentToken) {
+          return {
+            type: "serving_conflict",
+            token: currentToken,
+          };
+        }
+
+        // Promote the earliest waiting token.
+        const nextToken = await Token.findOneAndUpdate(
+          {
+            queue: updatedQueue._id,
+            status: "waiting",
+          },
+          {
+            $set: {
+              status: "serving",
+            },
+          },
+          {
+            session,
+            sort: {
+              tokenNumber: 1,
+            },
+            returnDocument: "after",
+          }
+        );
+
+        if (!nextToken) {
+          return {
+            type: "no_waiting",
+          };
+        }
+
+        return {
+          type: "success",
+          token: nextToken,
+        };
+      },
+      {
+        readPreference: "primary",
+        readConcern: {
+          level: "snapshot",
+        },
+        writeConcern: {
+          w: "majority",
+        },
+      }
+    );
+
+    // Send responses only after transaction completes.
+    if (outcome.type === "not_found") {
+      return res.status(404).json({
+        message: "Queue not found",
+      });
+    }
+
+    if (outcome.type === "queue_unavailable") {
+      return res.status(409).json({
         message: "Queue is not open",
       });
     }
 
-    // Check whether a customer is already being served.
-    const currentToken = await Token.findOne({
-      queue: queue._id,
-      status: "serving",
-    });
-
-    if (currentToken) {
+    if (outcome.type === "serving_conflict") {
       return res.status(409).json({
         message:
           "Complete the current token before calling the next customer",
-        token: currentToken,
+        token: outcome.token,
       });
     }
 
-    // Atomically select and update the next waiting token.
-    // The unique_serving_token_per_queue index prevents
-    // two tokens from becoming serving in the same queue.
-    const nextToken = await Token.findOneAndUpdate(
-      { queue: queue._id, status: "waiting" },
-      { $set: { status: "serving" } },
-      {
-        sort: { tokenNumber: 1 },
-        returnDocument: "after",
-      }
-    );
-
-    if (!nextToken) {
+    if (outcome.type === "no_waiting") {
       return res.status(404).json({
         message: "No waiting customers in this queue",
       });
@@ -425,10 +506,10 @@ const callNextCustomer = async (req, res) => {
 
     return res.status(200).json({
       message: "Next customer called successfully",
-      token: nextToken,
+      token: outcome.token,
     });
   } catch (error) {
-    // Detect a conflict from the unique serving-token index.
+    // Handle duplicate serving-token index conflict.
     const isServingTokenDuplicate =
       error.code === 11000 &&
       (
@@ -464,7 +545,7 @@ const callNextCustomer = async (req, res) => {
       }
     }
 
-    console.error("Call next customer error:", error);
+    console.error("Call next customer transaction error:", error);
 
     return res.status(500).json({
       message: "Unable to call next customer",
