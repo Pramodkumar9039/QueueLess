@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 process.env.MONGOMS_VERSION = "7.0.14";
 
 const { MongoMemoryReplSet } = require("mongodb-memory-server");
+const os = require("os");
 
 jest.setTimeout(120000);
 
@@ -67,7 +68,11 @@ beforeAll(async () => {
     },
   });
 
-  await mongoose.connect(replSet.getUri());
+  await mongoose.connect(replSet.getUri(), {
+    runtimeAdapters: {
+      os,
+    },
+  });
   await Promise.all([
     User.init(),
     Organization.init(),
@@ -215,6 +220,9 @@ describe("token concurrency and authorization", () => {
       status: "serving",
     });
 
+    console.log("concurrent call-next statuses:", statuses);
+    console.log("concurrent call-next serving count:", servingCount);
+
     expect(servingCount).toBe(1);
     expect(statuses.filter((status) => status === 200)).toHaveLength(1);
     expect(statuses.every((status) => [200, 409, 404].includes(status))).toBe(
@@ -244,6 +252,52 @@ describe("token concurrency and authorization", () => {
         status: { $in: ["waiting", "serving"] },
       })
     ).toBe(1);
+  });
+
+  test("prevents concurrent active tokens and preserves unique queue numbers", async () => {
+    const otherQueue = await createQueue();
+
+    const [sameCustomerA, sameCustomerB] = await Promise.all([
+      request(app)
+        .post("/api/tokens")
+        .set("Authorization", authHeader(customerOne))
+        .send({ queueId: queue._id.toString() }),
+      request(app)
+        .post("/api/tokens")
+        .set("Authorization", authHeader(customerOne))
+        .send({ queueId: otherQueue._id.toString() }),
+    ]);
+
+    expect([sameCustomerA.status, sameCustomerB.status].sort()).toEqual([
+      201,
+      409,
+    ]);
+    expect(
+      await Token.countDocuments({
+        customer: customerOne._id,
+        status: { $in: ["waiting", "serving"] },
+      })
+    ).toBe(1);
+
+    const [customerTwoResponse, customerThreeResponse] = await Promise.all([
+      request(app)
+        .post("/api/tokens")
+        .set("Authorization", authHeader(customerTwo))
+        .send({ queueId: queue._id.toString() }),
+      request(app)
+        .post("/api/tokens")
+        .set("Authorization", authHeader(customerThree))
+        .send({ queueId: queue._id.toString() }),
+    ]);
+
+    expect(customerTwoResponse.status).toBe(201);
+    expect(customerThreeResponse.status).toBe(201);
+    const queueTokens = await Token.find({ queue: queue._id }).select(
+      "tokenNumber"
+    );
+    expect(new Set(queueTokens.map((token) => token.tokenNumber)).size).toBe(
+      queueTokens.length
+    );
   });
 
   test("does not promote a token on a paused or closed queue", async () => {
@@ -293,6 +347,13 @@ describe("token concurrency and authorization", () => {
     const servingCount = await Token.countDocuments({
       queue: queue._id,
       status: "serving",
+    });
+
+    console.log("pause race statuses:", {
+      pause: pauseResponse.status,
+      callNext: callResponse.status,
+      finalQueue: finalQueue.status,
+      servingCount,
     });
 
     expect(pauseResponse.status).toBe(200);
