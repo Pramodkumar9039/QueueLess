@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 const Token = require("../models/Token");
 const Queue = require("../models/Queue");
@@ -51,12 +52,14 @@ const createToken = async (req, res) => {
     const { queueId } = req.body;
     const customerId = req.user.userId;
 
+    // Validate queue ID.
     if (!queueId || !mongoose.Types.ObjectId.isValid(queueId)) {
       return res.status(400).json({
         message: "A valid queue ID is required",
       });
     }
 
+    // Check whether queue exists.
     const queue = await Queue.findById(queueId);
 
     if (!queue) {
@@ -65,6 +68,7 @@ const createToken = async (req, res) => {
       });
     }
 
+    // Check queue status.
     if (queue.status !== "open") {
       return res.status(400).json({
         message:
@@ -88,6 +92,7 @@ const createToken = async (req, res) => {
       });
     }
 
+    // Atomically increment the queue token number.
     const updatedQueue = await Queue.findOneAndUpdate(
       { _id: queue._id, status: "open" },
       { $inc: { lastTokenNumber: 1 } },
@@ -102,6 +107,7 @@ const createToken = async (req, res) => {
     }
 
     try {
+      // Create the token.
       const newToken = await Token.create({
         queue: updatedQueue._id,
         customer: customerId,
@@ -113,13 +119,42 @@ const createToken = async (req, res) => {
         token: newToken,
       });
     } catch (error) {
-      await Queue.updateOne(
-        {
-          _id: updatedQueue._id,
-          lastTokenNumber: updatedQueue.lastTokenNumber,
-        },
-        { $inc: { lastTokenNumber: -1 } }
-      );
+      // Handle duplicate active token error.
+      const isActiveTokenDuplicate =
+        error.code === 11000 &&
+        (
+          error.keyPattern?.customer === 1 ||
+          error.message?.includes("unique_active_token_per_customer")
+        );
+
+      if (isActiveTokenDuplicate) {
+        const activeToken = await Token.findOne({
+          customer: customerId,
+          status: { $in: ["waiting", "serving"] },
+        });
+
+        return res.status(409).json({
+          message:
+            "You already have an active token. Complete or cancel your current queue before joining another.",
+          token: activeToken,
+        });
+      }
+
+      // Safely attempt counter rollback for other creation errors.
+      // Token number gaps are acceptable if rollback is not possible.
+      try {
+        await Queue.updateOne(
+          {
+            _id: updatedQueue._id,
+            lastTokenNumber: updatedQueue.lastTokenNumber,
+          },
+          {
+            $inc: { lastTokenNumber: -1 },
+          }
+        );
+      } catch (rollbackError) {
+        console.error("Token counter rollback error:", rollbackError);
+      }
 
       throw error;
     }
@@ -356,6 +391,7 @@ const callNextCustomer = async (req, res) => {
       });
     }
 
+    // Check whether a customer is already being served.
     const currentToken = await Token.findOne({
       queue: queue._id,
       status: "serving",
@@ -369,6 +405,9 @@ const callNextCustomer = async (req, res) => {
       });
     }
 
+    // Atomically select and update the next waiting token.
+    // The unique_serving_token_per_queue index prevents
+    // two tokens from becoming serving in the same queue.
     const nextToken = await Token.findOneAndUpdate(
       { queue: queue._id, status: "waiting" },
       { $set: { status: "serving" } },
@@ -389,6 +428,42 @@ const callNextCustomer = async (req, res) => {
       token: nextToken,
     });
   } catch (error) {
+    // Detect a conflict from the unique serving-token index.
+    const isServingTokenDuplicate =
+      error.code === 11000 &&
+      (
+        error.message?.includes("unique_serving_token_per_queue") ||
+        (
+          error.keyPattern?.queue === 1 &&
+          !error.keyPattern?.tokenNumber
+        )
+      );
+
+    if (isServingTokenDuplicate) {
+      try {
+        const currentToken = await Token.findOne({
+          queue: req.params.queueId,
+          status: "serving",
+        });
+
+        return res.status(409).json({
+          message:
+            "Another customer is already being served. Complete that token before calling the next customer.",
+          token: currentToken,
+        });
+      } catch (lookupError) {
+        console.error(
+          "Error retrieving current serving token:",
+          lookupError
+        );
+
+        return res.status(409).json({
+          message:
+            "Another customer is already being served. Please refresh and try again.",
+        });
+      }
+    }
+
     console.error("Call next customer error:", error);
 
     return res.status(500).json({
