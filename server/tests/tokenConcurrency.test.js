@@ -220,14 +220,9 @@ describe("token concurrency and authorization", () => {
       status: "serving",
     });
 
-    console.log("concurrent call-next statuses:", statuses);
-    console.log("concurrent call-next serving count:", servingCount);
-
     expect(servingCount).toBe(1);
-    expect(statuses.filter((status) => status === 200)).toHaveLength(1);
-    expect(statuses.every((status) => [200, 409, 404].includes(status))).toBe(
-      true
-    );
+    expect(statuses).toEqual([200, 409, 409, 409]);
+    expect(statuses).not.toContain(404);
     expect(statuses).not.toContain(500);
   });
 
@@ -349,16 +344,62 @@ describe("token concurrency and authorization", () => {
       status: "serving",
     });
 
-    console.log("pause race statuses:", {
-      pause: pauseResponse.status,
-      callNext: callResponse.status,
-      finalQueue: finalQueue.status,
-      servingCount,
-    });
-
     expect(pauseResponse.status).toBe(200);
     expect([200, 409]).toContain(callResponse.status);
     expect(servingCount).toBeLessThanOrEqual(1);
+    expect(finalQueue.status).toBe("paused");
+  });
+
+  test("rejects call-next after the pause request completes", async () => {
+    queue = await Queue.create({
+      service: service._id,
+      date: new Date().toISOString().slice(0, 10),
+      status: "open",
+    });
+    await createWaitingToken(customerOne, queue, 1);
+
+    const pauseResponse = await request(app)
+      .patch(`/api/queues/service/${service._id}/status`)
+      .set("Authorization", authHeader(staff))
+      .send({ status: "paused" });
+    const callResponse = await request(app)
+      .post(`/api/tokens/queue/${queue._id}/call-next`)
+      .set("Authorization", authHeader(staff));
+
+    expect(pauseResponse.status).toBe(200);
+    expect(callResponse.status).toBe(409);
+    expect(
+      await Token.countDocuments({
+        queue: queue._id,
+        status: "serving",
+      })
+    ).toBe(0);
+  });
+
+  test("promotes a token before pausing when call-next completes first", async () => {
+    queue = await Queue.create({
+      service: service._id,
+      date: new Date().toISOString().slice(0, 10),
+      status: "open",
+    });
+    await createWaitingToken(customerOne, queue, 1);
+
+    const callResponse = await request(app)
+      .post(`/api/tokens/queue/${queue._id}/call-next`)
+      .set("Authorization", authHeader(staff));
+    const servingCountBeforePause = await Token.countDocuments({
+      queue: queue._id,
+      status: "serving",
+    });
+    const pauseResponse = await request(app)
+      .patch(`/api/queues/service/${service._id}/status`)
+      .set("Authorization", authHeader(staff))
+      .send({ status: "paused" });
+    const finalQueue = await Queue.findById(queue._id);
+
+    expect(callResponse.status).toBe(200);
+    expect(servingCountBeforePause).toBe(1);
+    expect(pauseResponse.status).toBe(200);
     expect(finalQueue.status).toBe("paused");
   });
 
