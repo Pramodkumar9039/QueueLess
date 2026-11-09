@@ -101,7 +101,7 @@ const loginUser = async (req , res) => {
         })
 
         // Use the same error for an unknown email and wrong password
-        if(!user){
+        if(!user || user.isActive === false){
             return res.status(401).json({
                 message: "Invalid email or password"
             })

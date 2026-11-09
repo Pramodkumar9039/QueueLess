@@ -5,6 +5,11 @@ const router = express.Router();
 const authMiddleware = require('../middleware/authMiddleware');
 const staffMiddleware = require('../middleware/staffMiddleware');
 const adminMiddleware = require('../middleware/adminMiddleware');
+const {
+  assignmentValidation,
+  staffValidation,
+  userValidation,
+} = require('../middleware/validation');
 
 const {
   createUser,
@@ -13,15 +18,22 @@ const {
   getAllStaff,
 } = require('../controllers/userController');
 
-router.post('/', authMiddleware, staffMiddleware, createUser);
+router.post('/', authMiddleware, staffMiddleware, userValidation, createUser);
 
-router.post('/staff', authMiddleware, adminMiddleware, createStaff);
+router.post(
+  '/staff',
+  authMiddleware,
+  adminMiddleware,
+  staffValidation,
+  createStaff
+);
 
 // Assign an existing staff account to an organization.
 router.patch(
   '/staff/assign',
   authMiddleware,
   adminMiddleware,
+  assignmentValidation,
   assignExistingStaff
 );
 

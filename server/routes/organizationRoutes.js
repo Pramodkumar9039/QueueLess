@@ -5,6 +5,7 @@ const router = express.Router();
 const authMiddleware = require('../middleware/authMiddleware');
 const adminMiddleware = require('../middleware/adminMiddleware');
 const staffMiddleware = require('../middleware/staffMiddleware');
+const { organizationValidation } = require('../middleware/validation');
 
 const {
   createOrganization,
@@ -24,6 +25,12 @@ router.get(
 );
 
 // Admin only: create organizations
-router.post('/', authMiddleware, adminMiddleware, createOrganization);
+router.post(
+  '/',
+  authMiddleware,
+  adminMiddleware,
+  organizationValidation,
+  createOrganization
+);
 
 module.exports = router;

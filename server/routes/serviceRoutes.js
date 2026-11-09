@@ -4,6 +4,10 @@ const router = express.Router();
 
 const authMiddleware = require('../middleware/authMiddleware');
 const adminMiddleware = require('../middleware/adminMiddleware');
+const {
+    mongoIdParam,
+    serviceValidation
+} = require('../middleware/validation');
 
 const {
     createService,
@@ -13,6 +17,7 @@ const {
 // Anyone can view services for an organization.
 router.get(
     '/organization/:organizationId',
+    mongoIdParam('organizationId'),
     getServicesByOrganization
 );
 
@@ -21,6 +26,7 @@ router.post(
     '/',
     authMiddleware,
     adminMiddleware,
+    serviceValidation,
     createService
 );
 

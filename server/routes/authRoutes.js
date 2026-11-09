@@ -6,12 +6,20 @@ const {
     registerUser
 } = require('../controllers/authController.js');
 
-const authMiddleware = require('../middleware/authmiddleware.js');
+const authMiddleware = require('../middleware/authMiddleware.js');
+const {
+    loginRateLimiter,
+    registerRateLimiter
+} = require('../middleware/authRateLimit.js');
+const {
+    loginValidation,
+    registrationValidation
+} = require('../middleware/validation');
 
 const router = express.Router();
 
-router.post('/register',registerUser);
-router.post('/login',loginUser);
+router.post('/register', registerRateLimiter, registrationValidation, registerUser);
+router.post('/login', loginRateLimiter, loginValidation, loginUser);
 
 // A protected endpoint to test authentication 
 router.get('/me',authMiddleware, async (req , res) => {

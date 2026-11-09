@@ -9,8 +9,22 @@ const organizationRoutes = require('./routes/organizationRoutes')
 const serviceRoutes = require('./routes/serviceRoutes');
 const queueRoutes = require("./routes/queueRoutes");
 const tokenRoutes = require("./routes/tokenRoutes");
+const {
+    errorHandler,
+    notFoundHandler
+} = require("./middleware/errorHandler");
 
 const app = express();
+
+const trustProxyHops = process.env.TRUST_PROXY_HOPS
+    ? Number(process.env.TRUST_PROXY_HOPS)
+    : 0;
+
+if (!Number.isInteger(trustProxyHops) || trustProxyHops < 0) {
+    throw new Error('TRUST_PROXY_HOPS must be a non-negative integer');
+}
+
+app.set('trust proxy', trustProxyHops);
 
 app.use(cors({
     origin: 'http://localhost:5173'
@@ -30,6 +44,9 @@ app.get('/', (req, res) => {
         message: 'Welcome to QueueLess'
     })
 })
+
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 

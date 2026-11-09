@@ -4,6 +4,10 @@ const router = express.Router();
 
 const authMiddleware = require("../middleware/authMiddleware");
 const staffMiddleware = require("../middleware/staffMiddleware");
+const {
+  mongoIdParam,
+  queueIdBodyValidation,
+} = require("../middleware/validation");
 
 const {
   createToken,
@@ -17,7 +21,7 @@ const {
 } = require("../controllers/tokenController");
 
 // Create a token for the logged-in customer.
-router.post("/", authMiddleware, createToken);
+router.post("/", authMiddleware, queueIdBodyValidation, createToken);
 
 // Get the logged-in customer's active token across all queues.
 router.get(
@@ -30,6 +34,7 @@ router.get(
 router.get(
   "/queue/:queueId/my-active",
   authMiddleware,
+  mongoIdParam("queueId"),
   getMyActiveToken
 );
 
@@ -37,6 +42,7 @@ router.get(
 router.get(
   "/queue/:queueId/customer-tokens",
   authMiddleware,
+  mongoIdParam("queueId"),
   getCustomerQueueTokens
 );
 
@@ -45,6 +51,7 @@ router.get(
   "/queue/:queueId/tokens",
   authMiddleware,
   staffMiddleware,
+  mongoIdParam("queueId"),
   getQueueTokens
 );
 
@@ -53,6 +60,7 @@ router.post(
   "/queue/:queueId/call-next",
   authMiddleware,
   staffMiddleware,
+  mongoIdParam("queueId"),
   callNextCustomer
 );
 
@@ -60,6 +68,7 @@ router.post(
 router.get(
   "/:tokenId/status",
   authMiddleware,
+  mongoIdParam("tokenId"),
   getMyTokenStatus
 );
 
@@ -68,6 +77,7 @@ router.patch(
   "/:tokenId/complete",
   authMiddleware,
   staffMiddleware,
+  mongoIdParam("tokenId"),
   completeToken
 );
 

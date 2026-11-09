@@ -3,6 +3,10 @@ const router = express.Router();
 
 const authMiddleware = require("../middleware/authMiddleware");
 const staffMiddleware = require("../middleware/staffMiddleware");
+const {
+  mongoIdParam,
+  queueStatusValidation,
+} = require("../middleware/validation");
 
 const {
   getOrCreateQueue,
@@ -10,13 +14,15 @@ const {
 } = require("../controllers/queueController");
 
 // Get or create a queue for a service
-router.get("/service/:serviceId", getOrCreateQueue);
+router.get("/service/:serviceId", mongoIdParam("serviceId"), getOrCreateQueue);
 
 // Pause or resume today's queue — staff only
 router.patch(
   "/service/:serviceId/status",
   authMiddleware,
   staffMiddleware,
+  mongoIdParam("serviceId"),
+  queueStatusValidation,
   updateQueueStatus
 );
 
