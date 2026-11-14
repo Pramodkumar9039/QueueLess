@@ -417,21 +417,21 @@ const StaffDashboard = () => {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#EAF3FB] px-3 pb-6 pt-3 text-center text-sm text-[#52647E] sm:px-5">
+      <main className="min-h-screen bg-[#FFFFFF] px-3 pb-6 pt-3 text-center text-sm text-[#141619] sm:px-5">
         Loading Staff Dashboard...
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#EAF3FB] px-3 pb-6 pt-3 sm:px-5">
+    <main className="min-h-screen bg-[#FFFFFF] px-3 pb-6 pt-3 sm:px-5">
       <div className="mx-auto max-w-[1440px]">
         <header className="mb-4 flex items-center justify-between">
-          <h1 className="text-lg font-bold tracking-tight text-[#101D3A] sm:text-xl">
+          <h1 className="text-lg font-bold tracking-tight text-[#141619] sm:text-xl">
             Staff Dashboard
           </h1>
 
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#1768F2] text-sm font-bold text-white shadow-sm">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#141619] text-sm font-bold text-white shadow-sm">
             S
           </div>
         </header>
@@ -439,12 +439,12 @@ const StaffDashboard = () => {
         {/* Organization and service selectors */}
         <section className="mb-4 grid max-w-[600px] grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <label className="mb-1.5 block text-xs font-semibold text-[#263653]">
+            <label className="mb-1.5 block text-xs font-semibold text-[#141619]">
               Organization
             </label>
 
             <div className="relative">
-              <FaBuilding className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[#1768F2]" />
+              <FaBuilding className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[#141619]" />
 
               <select
                 value={organizationId}
@@ -453,7 +453,7 @@ const StaffDashboard = () => {
                   setError("");
                   setNotice("");
                 }}
-                className="w-full cursor-pointer appearance-none rounded-lg border border-[#E0E9F4] bg-white py-2.5 pl-8 pr-8 text-xs text-[#263653] outline-none transition focus:border-[#88BDF2] focus:ring-2 focus:ring-[#BDDDFC]"
+                className="w-full cursor-pointer appearance-none rounded-lg border border-[#D1D1D1] bg-white py-2.5 pl-8 pr-8 text-xs text-[#141619] outline-none transition focus:border-[#141619] focus:ring-2 focus:ring-[#FFFFFF]"
               >
                 <option value="">Select organization</option>
 
@@ -467,12 +467,12 @@ const StaffDashboard = () => {
                 ))}
               </select>
 
-              <FaChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-[#71809A]" />
+              <FaChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-[#141619]" />
             </div>
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-semibold text-[#263653]">
+            <label className="mb-1.5 block text-xs font-semibold text-[#141619]">
               Service
             </label>
 
@@ -485,7 +485,7 @@ const StaffDashboard = () => {
                   setNotice("");
                 }}
                 disabled={!organizationId || services.length === 0}
-                className="w-full cursor-pointer appearance-none rounded-lg border border-[#E0E9F4] bg-white py-2.5 pl-3 pr-8 text-xs text-[#263653] outline-none transition focus:border-[#88BDF2] focus:ring-2 focus:ring-[#BDDDFC] disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full cursor-pointer appearance-none rounded-lg border border-[#D1D1D1] bg-white py-2.5 pl-3 pr-8 text-xs text-[#141619] outline-none transition focus:border-[#141619] focus:ring-2 focus:ring-[#FFFFFF] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <option value="">
                   {services.length === 0
@@ -503,35 +503,35 @@ const StaffDashboard = () => {
                 ))}
               </select>
 
-              <FaChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-[#71809A]" />
+              <FaChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-[#141619]" />
             </div>
           </div>
         </section>
 
         {error && (
-          <div className="mb-3 rounded-lg bg-red-50 px-3 py-2.5 text-xs text-red-700">
+          <div className="mb-3 rounded-lg bg-[#FFFFFF] px-3 py-2.5 text-xs text-[#141619]">
             {error}
           </div>
         )}
 
         {notice && (
-          <div className="mb-3 rounded-lg bg-green-50 px-3 py-2.5 text-xs text-green-700">
+          <div className="mb-3 rounded-lg bg-[#FFFFFF] px-3 py-2.5 text-xs text-[#141619]">
             {notice}
           </div>
         )}
 
         {/* Current and next customer cards */}
         <section className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <article className="rounded-xl border border-[#D7EFDD] bg-gradient-to-br from-[#E1F6E6] to-[#D5F0DD] p-4">
-            <h2 className="text-center text-xs font-bold text-[#263653]">
+          <article className="rounded-xl border border-[#D1D1D1] bg-gradient-to-br from-[#FFFFFF] to-[#FFFFFF] p-4">
+            <h2 className="text-center text-xs font-bold text-[#141619]">
               Current Customer
             </h2>
 
-            <p className="mt-3 text-center text-3xl font-extrabold leading-none text-[#101D3A]">
+            <p className="mt-3 text-center text-3xl font-extrabold leading-none text-[#141619]">
               {tokenLabel(current)}
             </p>
 
-            <p className="mt-2 flex items-center justify-center gap-1.5 text-[11px] text-[#526B91]">
+            <p className="mt-2 flex items-center justify-center gap-1.5 text-[11px] text-[#141619]">
               <FaClock className="text-[10px]" />
               {current ? waitTime(current) : "No active customer"}
             </p>
@@ -540,22 +540,22 @@ const StaffDashboard = () => {
               type="button"
               onClick={completeCustomer}
               disabled={busy || !current}
-              className="mt-3 w-full cursor-pointer rounded-lg bg-[#1768F2] py-2.5 text-xs font-semibold text-white transition hover:bg-[#1256CF] disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-3 w-full cursor-pointer rounded-lg bg-[#141619] py-2.5 text-xs font-semibold text-white transition hover:bg-[#141619] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {busy ? "Please wait..." : "Complete"}
             </button>
           </article>
 
-          <article className="rounded-xl border border-[#E0E8F2] bg-gradient-to-br from-[#F5F8FD] to-[#EAF1F9] p-4">
-            <h2 className="text-center text-xs font-bold text-[#263653]">
+          <article className="rounded-xl border border-[#D1D1D1] bg-gradient-to-br from-[#FFFFFF] to-[#FFFFFF] p-4">
+            <h2 className="text-center text-xs font-bold text-[#141619]">
               Next in Queue
             </h2>
 
-            <p className="mt-3 text-center text-3xl font-extrabold leading-none text-[#101D3A]">
+            <p className="mt-3 text-center text-3xl font-extrabold leading-none text-[#141619]">
               {tokenLabel(next)}
             </p>
 
-            <p className="mt-2 flex items-center justify-center gap-1.5 text-[11px] text-[#526B91]">
+            <p className="mt-2 flex items-center justify-center gap-1.5 text-[11px] text-[#141619]">
               <FaClock className="text-[10px]" />
               {next ? waitTime(next) : "No waiting customer"}
             </p>
@@ -570,7 +570,7 @@ const StaffDashboard = () => {
                 Boolean(current) ||
                 !next
               }
-              className="mt-3 w-full cursor-pointer rounded-lg bg-[#C9DDFB] py-2.5 text-xs font-semibold text-[#174E9C] transition hover:bg-[#B8D1F8] disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-3 w-full cursor-pointer rounded-lg bg-[#FFFFFF] py-2.5 text-xs font-semibold text-[#141619] transition hover:bg-[#F3F3F3] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {busy ? "Please wait..." : "Call Next"}
             </button>
@@ -578,8 +578,8 @@ const StaffDashboard = () => {
         </section>
 
         {/* Queue tabs and table */}
-        <section className="overflow-hidden rounded-xl border border-[#DCE7F4] bg-white shadow-sm">
-          <div className="flex items-center gap-5 border-b border-[#E5ECF5] px-3 pt-3 sm:gap-6">
+        <section className="overflow-hidden rounded-xl border border-[#D1D1D1] bg-white shadow-sm">
+          <div className="flex items-center gap-5 border-b border-[#D1D1D1] px-3 pt-3 sm:gap-6">
             {[
               { id: "waiting", label: "Waiting", count: waiting.length },
               { id: "serving", label: "Serving", count: serving.length },
@@ -595,8 +595,8 @@ const StaffDashboard = () => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`cursor-pointer border-b-2 pb-2.5 text-xs font-semibold transition ${
                   activeTab === tab.id
-                    ? "border-[#1768F2] text-[#1768F2]"
-                    : "border-transparent text-[#71809A] hover:text-[#1768F2]"
+                    ? "border-[#141619] text-[#141619]"
+                    : "border-transparent text-[#141619] hover:text-[#141619]"
                 }`}
               >
                 {tab.label} ({tab.count})
@@ -606,7 +606,7 @@ const StaffDashboard = () => {
 
           <div className="overflow-x-auto">
             <table className="w-full min-w-[620px] text-left">
-              <thead className="bg-[#F7F9FC] text-[11px] text-[#71809A]">
+              <thead className="bg-[#FFFFFF] text-[11px] text-[#141619]">
                 <tr>
                   <th className="px-3 py-3 font-semibold">#</th>
                   <th className="px-3 py-3 font-semibold">Token</th>
@@ -619,11 +619,11 @@ const StaffDashboard = () => {
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-[#EDF1F7] text-xs text-[#263653]">
+              <tbody className="divide-y divide-[#FFFFFF] text-xs text-[#141619]">
                 {visibleTokens.map((item, index) => (
                   <tr
                     key={item._id || item.id}
-                    className="transition hover:bg-[#F8FBFF]"
+                    className="transition hover:bg-[#F3F3F3]"
                   >
                     <td className="px-3 py-3">{index + 1}</td>
 
@@ -651,12 +651,12 @@ const StaffDashboard = () => {
                             queue?.status !== "open"
                           }
                           onClick={callNext}
-                          className="cursor-pointer rounded-md bg-[#1768F2] px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-[#1256CF] disabled:cursor-not-allowed disabled:opacity-50"
+                          className="cursor-pointer rounded-md bg-[#141619] px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-[#141619] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           Call
                         </button>
                       ) : (
-                        <span className="capitalize text-[#71809A]">
+                        <span className="capitalize text-[#141619]">
                           {item.status}
                         </span>
                       )}
@@ -667,13 +667,13 @@ const StaffDashboard = () => {
                 {visibleTokens.length === 0 && (
                   <tr>
                     <td colSpan={6} className="px-3 py-6 text-center">
-                      <p className="text-xs font-medium text-[#52647E]">
+                      <p className="text-xs font-medium text-[#141619]">
                         {!serviceId
                           ? "Select an organization and service"
                           : "No customers in this section"}
                       </p>
 
-                      <p className="mt-1 text-[11px] text-[#8A98AD]">
+                      <p className="mt-1 text-[11px] text-[#141619]">
                         Queue updates will appear here when token data is
                         available.
                       </p>
@@ -685,9 +685,9 @@ const StaffDashboard = () => {
           </div>
 
           {/* Queue footer with Pause/Resume controls */}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#EDF1F7] px-3 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#D1D1D1] px-3 py-3">
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-[#8A98AD]">
+              <span className="text-[11px] text-[#141619]">
                 Queue:
               </span>
 
@@ -696,8 +696,8 @@ const StaffDashboard = () => {
                   queue?.status === "paused"
                     ? "bg-amber-100 text-amber-700"
                     : queue?.status === "open"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-gray-100 text-gray-600"
+                      ? "bg-[#FFFFFF] text-[#141619]"
+                      : "bg-[#FFFFFF] text-[#141619]"
                 }`}
               >
                 {queue?.status || "Not selected"}
@@ -716,7 +716,7 @@ const StaffDashboard = () => {
                 }
                 className={`cursor-pointer rounded-md px-3 py-2 text-xs font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50 ${
                   queue?.status === "paused"
-                    ? "bg-green-600 hover:bg-green-700"
+                    ? "bg-[#141619] hover:bg-[#141619]"
                     : "bg-amber-500 hover:bg-amber-600"
                 }`}
               >
@@ -729,7 +729,7 @@ const StaffDashboard = () => {
                 type="button"
                 onClick={() => loadQueue(false)}
                 disabled={!serviceId || busy}
-                className="cursor-pointer rounded-md px-3 py-2 text-xs font-semibold text-[#1768F2] transition hover:bg-[#EFF6FF] hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                className="cursor-pointer rounded-md px-3 py-2 text-xs font-semibold text-[#141619] transition hover:bg-[#F3F3F3] hover:underline disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Refresh
               </button>

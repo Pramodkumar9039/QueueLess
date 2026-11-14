@@ -5,7 +5,7 @@ import Topbar from "./Topbar";
 
 const MainLayout = () => {
   return (
-    <div className="min-h-screen bg-[#F4F7FC]">
+    <div className="min-h-screen bg-[#FFFFFF]">
 
       {/* Fixed left sidebar */}
       <Sidebar />

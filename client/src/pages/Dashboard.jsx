@@ -220,8 +220,8 @@ const Dashboard = () => {
   // Loading state.
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#EAF3FB] px-3 py-5 sm:px-6 sm:py-8">
-        <div className="rounded-xl bg-white p-8 text-center text-sm text-[#71809A]">
+      <main className="min-h-screen bg-[#FFFFFF] px-3 py-5 sm:px-6 sm:py-8">
+        <div className="rounded-xl bg-white p-8 text-center text-sm text-[#141619]">
           Loading your queue status...
         </div>
       </main>
@@ -231,20 +231,20 @@ const Dashboard = () => {
   // No active token found.
   if (!tokenData) {
     return (
-      <main className="min-h-screen bg-[#EAF3FB] px-3 py-5 sm:px-6 sm:py-8">
-        <div className="mx-auto mt-12 max-w-lg rounded-2xl border border-[#E0EAF5] bg-white p-8 text-center shadow-sm">
-          <h1 className="text-xl font-bold text-[#182541]">
+      <main className="min-h-screen bg-[#FFFFFF] px-3 py-5 sm:px-6 sm:py-8">
+        <div className="mx-auto mt-12 max-w-lg rounded-2xl border border-[#D1D1D1] bg-white p-8 text-center shadow-sm">
+          <h1 className="text-xl font-bold text-[#141619]">
             No selected queue
           </h1>
 
-          <p className="mt-3 text-sm text-[#71809A]">
+          <p className="mt-3 text-sm text-[#141619]">
             Open an organization, select a service, and join its queue
             to view your live status.
           </p>
 
           <Link
             to="/"
-            className="mt-5 inline-block cursor-pointer rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+            className="mt-5 inline-block cursor-pointer rounded-lg bg-[#141619] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#141619]"
           >
             Explore Organizations
           </Link>
@@ -297,41 +297,41 @@ const Dashboard = () => {
         : 15;
 
   const statusStyles = {
-    waiting: "bg-slate-100 text-slate-600",
-    serving: "bg-blue-100 text-blue-700",
-    completed: "bg-green-100 text-green-700",
+    waiting: "bg-[#FFFFFF] text-[#141619]",
+    serving: "bg-[#FFFFFF] text-[#141619]",
+    completed: "bg-[#FFFFFF] text-[#141619]",
   };
 
   const queueStatusStyles = {
-    open: "bg-green-50 text-green-700 border-green-200",
+    open: "bg-[#FFFFFF] text-[#141619] border-[#D1D1D1]",
     paused: "bg-amber-50 text-amber-800 border-amber-200",
-    closed: "bg-red-50 text-red-700 border-red-200",
+    closed: "bg-[#FFFFFF] text-[#141619] border-[#141619]",
   };
 
   const handleRefresh = () => refreshDashboard(true);
 
   return (
-    <main className="min-h-screen bg-[#EAF3FB] px-3 py-5 sm:px-6 sm:py-8">
+    <main className="min-h-screen bg-[#FFFFFF] px-3 py-5 sm:px-6 sm:py-8">
       <div className="mx-auto max-w-6xl">
         {/* Dashboard heading */}
         <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-blue-600">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#141619]">
               QueueLess Customer Dashboard
             </p>
 
-            <h1 className="mt-1 text-2xl font-extrabold text-[#182541]">
+            <h1 className="mt-1 text-2xl font-extrabold text-[#141619]">
               My Queue Status
             </h1>
 
-            <p className="mt-1 text-xs text-[#71809A]">
+            <p className="mt-1 text-xs text-[#141619]">
               Welcome, {user?.name || "Customer"}
             </p>
           </div>
         </header>
 
         {error && (
-          <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
+          <div className="mb-4 rounded-lg bg-[#FFFFFF] p-3 text-sm text-[#141619]">
             {error}
           </div>
         )}
@@ -347,10 +347,10 @@ const Dashboard = () => {
             <span
               className={`h-2.5 w-2.5 rounded-full ${
                 normalizedQueueStatus === "open"
-                  ? "bg-green-500"
+                  ? "bg-[#141619]"
                   : normalizedQueueStatus === "paused"
                     ? "bg-amber-500"
-                    : "bg-red-500"
+                    : "bg-[#141619]"
               }`}
             />
 
@@ -374,32 +374,32 @@ const Dashboard = () => {
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.2fr_0.8fr]">
           {/* LEFT PANEL */}
-          <section className="rounded-2xl border border-[#E0EAF5] bg-white p-4 shadow-sm sm:p-5">
+          <section className="rounded-2xl border border-[#D1D1D1] bg-white p-4 shadow-sm sm:p-5">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-base font-bold text-[#182541]">
+              <h2 className="text-base font-bold text-[#141619]">
                 My Queue Status
               </h2>
 
-              <span className="flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1 text-[10px] font-semibold text-green-700">
-                <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+              <span className="flex items-center gap-1.5 rounded-full bg-[#FFFFFF] px-3 py-1 text-[10px] font-semibold text-[#141619]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#141619]" />
                 Live
               </span>
             </div>
 
             {/* Organization and service */}
-            <div className="flex items-center gap-3 rounded-xl bg-[#EAF3FF] p-3">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-white text-xl text-blue-600">
+            <div className="flex items-center gap-3 rounded-xl bg-[#FFFFFF] p-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-white text-xl text-[#141619]">
                 {currentOrganization?.type === "clinic"
                   ? "✚"
                   : "⌂"}
               </div>
 
               <div className="min-w-0">
-                <h3 className="truncate text-sm font-bold text-[#182541]">
+                <h3 className="truncate text-sm font-bold text-[#141619]">
                   {currentOrganization?.name || "Your Organization"}
                 </h3>
 
-                <p className="mt-1 truncate text-xs text-[#71809A]">
+                <p className="mt-1 truncate text-xs text-[#141619]">
                   {currentService?.name || "Selected Service"}
                 </p>
               </div>
@@ -408,20 +408,20 @@ const Dashboard = () => {
             {/* Token details */}
             <div className="mt-5 grid grid-cols-1 items-center gap-5 sm:grid-cols-[0.9fr_1.1fr]">
               <div className="flex flex-col items-center">
-                <div className="flex h-32 w-32 flex-col items-center justify-center rounded-full border-[5px] border-[#E0ECFF] bg-white shadow-sm">
-                  <span className="text-[10px] text-[#71809A]">
+                <div className="flex h-32 w-32 flex-col items-center justify-center rounded-full border-[5px] border-[#D1D1D1] bg-white shadow-sm">
+                  <span className="text-[10px] text-[#141619]">
                     Token Number
                   </span>
 
-                  <span className="mt-1 text-3xl font-extrabold text-[#182541]">
+                  <span className="mt-1 text-3xl font-extrabold text-[#141619]">
                     {tokenData?.tokenNumber ?? "—"}
                   </span>
 
-                  <span className="mt-1 text-[10px] text-[#71809A]">
+                  <span className="mt-1 text-[10px] text-[#141619]">
                     Position in Queue
                   </span>
 
-                  <span className="text-xs font-bold text-[#182541]">
+                  <span className="text-xs font-bold text-[#141619]">
                     {position}
                   </span>
                 </div>
@@ -429,16 +429,16 @@ const Dashboard = () => {
 
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-lg text-blue-600 shadow-sm">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-lg text-[#141619] shadow-sm">
                     ◷
                   </div>
 
                   <div>
-                    <p className="text-[11px] text-[#71809A]">
+                    <p className="text-[11px] text-[#141619]">
                       Estimated Waiting Time
                     </p>
 
-                    <p className="mt-1 text-sm font-bold text-[#182541]">
+                    <p className="mt-1 text-sm font-bold text-[#141619]">
                       {status === "completed"
                         ? "Completed"
                         : status === "serving"
@@ -451,16 +451,16 @@ const Dashboard = () => {
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-lg text-blue-600 shadow-sm">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-lg text-[#141619] shadow-sm">
                     ♙
                   </div>
 
                   <div>
-                    <p className="text-[11px] text-[#71809A]">
+                    <p className="text-[11px] text-[#141619]">
                       People Ahead
                     </p>
 
-                    <p className="mt-1 text-sm font-bold text-[#182541]">
+                    <p className="mt-1 text-sm font-bold text-[#141619]">
                       {status === "serving" ||
                       status === "completed"
                         ? 0
@@ -470,20 +470,20 @@ const Dashboard = () => {
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-lg text-blue-600 shadow-sm">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-lg text-[#141619] shadow-sm">
                     ▦
                   </div>
 
                   <div>
-                    <p className="text-[11px] text-[#71809A]">
+                    <p className="text-[11px] text-[#141619]">
                       Joined At
                     </p>
 
-                    <p className="mt-1 text-xs font-semibold text-[#182541]">
+                    <p className="mt-1 text-xs font-semibold text-[#141619]">
                       {joinedAt}
                     </p>
 
-                    <p className="text-[10px] text-[#71809A]">
+                    <p className="text-[10px] text-[#141619]">
                       {joinedDate}
                     </p>
                   </div>
@@ -493,9 +493,9 @@ const Dashboard = () => {
 
             {/* Queue progress tracker */}
             <div className="mt-7 px-2">
-              <div className="relative h-1.5 rounded-full bg-[#E1EAF5]">
+              <div className="relative h-1.5 rounded-full bg-[#FFFFFF]">
                 <div
-                  className="absolute left-0 top-0 h-1.5 rounded-full bg-blue-500 transition-all duration-500"
+                  className="absolute left-0 top-0 h-1.5 rounded-full bg-[#141619] transition-all duration-500"
                   style={{ width: `${progress}%` }}
                 />
 
@@ -520,8 +520,8 @@ const Dashboard = () => {
                       <div
                         className={`flex h-5 w-5 items-center justify-center rounded-full border-2 border-white text-[9px] text-white shadow-sm ${
                           reached
-                            ? "bg-blue-600"
-                            : "bg-slate-300"
+                            ? "bg-[#141619]"
+                            : "bg-[#FFFFFF]"
                         }`}
                       >
                         {step.key === status
@@ -535,7 +535,7 @@ const Dashboard = () => {
                 })}
               </div>
 
-              <div className="mt-4 flex justify-between text-[10px] font-medium text-[#71809A]">
+              <div className="mt-4 flex justify-between text-[10px] font-medium text-[#141619]">
                 <span>Waiting</span>
                 <span>Serving</span>
                 <span>Completed</span>
@@ -548,14 +548,14 @@ const Dashboard = () => {
                 type="button"
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="cursor-pointer rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                className="cursor-pointer rounded-lg bg-[#141619] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#141619] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {refreshing ? "Refreshing..." : "Refresh Status"}
               </button>
 
               <Link
                 to="/"
-                className="cursor-pointer rounded-lg border border-[#D8E4F2] bg-white px-4 py-2 text-xs font-semibold text-[#52647E] transition hover:bg-[#F4F8FD]"
+                className="cursor-pointer rounded-lg border border-[#D1D1D1] bg-white px-4 py-2 text-xs font-semibold text-[#141619] transition hover:bg-[#F3F3F3]"
               >
                 Explore Organizations
               </Link>
@@ -563,14 +563,14 @@ const Dashboard = () => {
           </section>
 
           {/* RIGHT PANEL */}
-          <section className="rounded-2xl border border-[#E0EAF5] bg-white p-4 shadow-sm sm:p-5">
+          <section className="rounded-2xl border border-[#D1D1D1] bg-white p-4 shadow-sm sm:p-5">
             <div className="mb-4 flex items-center justify-between gap-2">
               <div>
-                <h2 className="text-base font-bold text-[#182541]">
+                <h2 className="text-base font-bold text-[#141619]">
                   Live Queue Updates
                 </h2>
 
-                <p className="mt-1 text-[10px] text-[#71809A]">
+                <p className="mt-1 text-[10px] text-[#141619]">
                   Live status of tokens in this queue
                 </p>
               </div>
@@ -579,7 +579,7 @@ const Dashboard = () => {
                 type="button"
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="cursor-pointer whitespace-nowrap text-xs font-semibold text-blue-600 transition hover:text-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+                className="cursor-pointer whitespace-nowrap text-xs font-semibold text-[#141619] transition hover:text-[#141619] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 ↻ {refreshing ? "Refreshing" : "Refresh"}
               </button>
@@ -587,12 +587,12 @@ const Dashboard = () => {
 
             <div className="space-y-2">
               {queueTokens.length === 0 ? (
-                <div className="rounded-xl border border-[#E8EEF6] bg-[#F8FAFD] p-4 text-center">
-                  <p className="text-sm font-semibold text-[#263653]">
+                <div className="rounded-xl border border-[#D1D1D1] bg-[#FFFFFF] p-4 text-center">
+                  <p className="text-sm font-semibold text-[#141619]">
                     No queue tokens found
                   </p>
 
-                  <p className="mt-1 text-xs text-[#71809A]">
+                  <p className="mt-1 text-xs text-[#141619]">
                     Queue tokens will appear here when available.
                   </p>
                 </div>
@@ -611,17 +611,17 @@ const Dashboard = () => {
                       key={item._id || item.id}
                       className={`flex items-center justify-between gap-3 rounded-xl border p-3 transition-colors ${
                         isMyToken
-                          ? "border-blue-200 bg-blue-50"
-                          : "border-[#E8EEF6] bg-white"
+                          ? "border-[#D1D1D1] bg-[#FFFFFF]"
+                          : "border-[#D1D1D1] bg-white"
                       }`}
                     >
                       <div>
-                        <p className="text-sm font-bold text-[#182541]">
+                        <p className="text-sm font-bold text-[#141619]">
                           A{String(item.tokenNumber).padStart(2, "0")}
                         </p>
 
                         {isMyToken && (
-                          <p className="mt-1 text-[10px] font-medium text-blue-600">
+                          <p className="mt-1 text-[10px] font-medium text-[#141619]">
                             Your Token
                           </p>
                         )}
@@ -630,7 +630,7 @@ const Dashboard = () => {
                       <span
                         className={`rounded-full px-3 py-1 text-[10px] font-semibold capitalize ${
                           statusStyles[itemStatus] ||
-                          "bg-slate-100 text-slate-600"
+                          "bg-[#FFFFFF] text-[#141619]"
                         }`}
                       >
                         {isMyToken ? status : itemStatus}
@@ -641,12 +641,12 @@ const Dashboard = () => {
               )}
             </div>
 
-            <p className="mt-4 text-[10px] leading-5 text-[#71809A]">
+            <p className="mt-4 text-[10px] leading-5 text-[#141619]">
               Queue information refreshes automatically every 10 seconds.
             </p>
 
             {lastUpdated && (
-              <p className="mt-1 text-[10px] text-[#71809A]">
+              <p className="mt-1 text-[10px] text-[#141619]">
                 Last updated:{" "}
                 {lastUpdated.toLocaleTimeString([], {
                   hour: "2-digit",

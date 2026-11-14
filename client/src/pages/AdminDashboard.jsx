@@ -368,20 +368,20 @@ const AdminDashboard = () => {
   ).length;
 
   return (
-    <main className="min-h-screen bg-[#EAF3FB] px-3 py-3">
+    <main className="min-h-screen bg-[#FFFFFF] px-3 py-3">
       <div className="mx-auto max-w-5xl">
         {/* Header */}
         <header className="mb-4 flex items-center justify-between gap-2">
           <div>
-            <p className="text-[11px] font-medium text-blue-600">
+            <p className="text-[11px] font-medium text-[#141619]">
               QueueLess Management
             </p>
 
-            <h1 className="text-xl font-bold text-[#101D3A]">
+            <h1 className="text-xl font-bold text-[#141619]">
               Admin Dashboard
             </h1>
 
-            <p className="text-xs text-slate-600">
+            <p className="text-xs text-[#141619]">
               Manage organizations, services, and staff.
             </p>
           </div>
@@ -392,7 +392,7 @@ const AdminDashboard = () => {
               onClick={loadOrganizations}
               disabled={loading}
               title="Refresh organizations"
-              className="rounded-md bg-white p-2 text-xs text-blue-700 shadow-sm hover:bg-blue-50 disabled:opacity-50"
+              className="rounded-md bg-white p-2 text-xs text-[#141619] shadow-sm hover:bg-[#F3F3F3] disabled:opacity-50"
             >
               <FaSync className={loading ? "animate-spin" : ""} />
             </button>
@@ -410,7 +410,7 @@ const AdminDashboard = () => {
                 setError("");
                 setSuccess("");
               }}
-              className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
+              className="flex items-center gap-1.5 rounded-md bg-[#141619] px-3 py-2 text-xs font-semibold text-white hover:bg-[#141619]"
             >
               {showOrganizationForm ? <FaTimes /> : <FaPlus />}
               {showOrganizationForm ? "Close" : "Create"}
@@ -420,22 +420,22 @@ const AdminDashboard = () => {
 
         {/* Success message */}
         {success && (
-          <div className="mb-3 rounded-md bg-green-50 px-3 py-2 text-xs text-green-700">
+          <div className="mb-3 rounded-md bg-[#FFFFFF] px-3 py-2 text-xs text-[#141619]">
             {success}
           </div>
         )}
 
         {/* Error message */}
         {error && (
-          <div className="mb-3 rounded-md bg-red-50 px-3 py-2 text-xs text-red-700">
+          <div className="mb-3 rounded-md bg-[#FFFFFF] px-3 py-2 text-xs text-[#141619]">
             {error}
           </div>
         )}
 
         {/* Create Organization Form */}
         {showOrganizationForm && (
-          <section className="mb-4 rounded-lg border border-blue-100 bg-white p-4 shadow-sm">
-            <h2 className="mb-3 text-sm font-bold text-[#101D3A]">
+          <section className="mb-4 rounded-lg border border-[#D1D1D1] bg-white p-4 shadow-sm">
+            <h2 className="mb-3 text-sm font-bold text-[#141619]">
               Create Organization
             </h2>
 
@@ -445,7 +445,7 @@ const AdminDashboard = () => {
             >
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-700">
+                  <label className="mb-1 block text-xs font-medium text-[#141619]">
                     Organization Name *
                   </label>
 
@@ -455,12 +455,12 @@ const AdminDashboard = () => {
                     onChange={handleOrganizationChange}
                     required
                     placeholder="Enter organization name"
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-xs outline-none focus:border-blue-500"
+                    className="w-full rounded-md border border-[#D1D1D1] px-3 py-2 text-xs outline-none focus:border-[#141619]"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-700">
+                  <label className="mb-1 block text-xs font-medium text-[#141619]">
                     Organization Type *
                   </label>
 
@@ -469,7 +469,7 @@ const AdminDashboard = () => {
                     value={organizationForm.type}
                     onChange={handleOrganizationChange}
                     required
-                    className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-xs outline-none focus:border-blue-500"
+                    className="w-full rounded-md border border-[#D1D1D1] bg-white px-3 py-2 text-xs outline-none focus:border-[#141619]"
                   >
                     <option value="clinic">Clinic</option>
                     <option value="salon">Salon</option>
@@ -480,7 +480,7 @@ const AdminDashboard = () => {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-700">
+                <label className="mb-1 block text-xs font-medium text-[#141619]">
                   Address *
                 </label>
 
@@ -490,12 +490,12 @@ const AdminDashboard = () => {
                   onChange={handleOrganizationChange}
                   required
                   placeholder="Enter address"
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-xs outline-none focus:border-blue-500"
+                  className="w-full rounded-md border border-[#D1D1D1] px-3 py-2 text-xs outline-none focus:border-[#141619]"
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-700">
+                <label className="mb-1 block text-xs font-medium text-[#141619]">
                   Description
                 </label>
 
@@ -505,7 +505,7 @@ const AdminDashboard = () => {
                   onChange={handleOrganizationChange}
                   rows={2}
                   placeholder="Optional description"
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-xs outline-none focus:border-blue-500"
+                  className="w-full rounded-md border border-[#D1D1D1] px-3 py-2 text-xs outline-none focus:border-[#141619]"
                 />
               </div>
 
@@ -513,7 +513,7 @@ const AdminDashboard = () => {
                 <button
                   type="button"
                   onClick={() => setShowOrganizationForm(false)}
-                  className="rounded-md border border-slate-300 px-3 py-2 text-xs"
+                  className="rounded-md border border-[#D1D1D1] px-3 py-2 text-xs"
                 >
                   Cancel
                 </button>
@@ -521,7 +521,7 @@ const AdminDashboard = () => {
                 <button
                   type="submit"
                   disabled={submittingOrganization}
-                  className="rounded-md bg-blue-600 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                  className="rounded-md bg-[#141619] px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
                 >
                   {submittingOrganization ? "Creating..." : "Create Organization"}
                 </button>
@@ -532,14 +532,14 @@ const AdminDashboard = () => {
 
         {/* Create Staff Form */}
         {showStaffForm && staffOrganization && (
-          <section className="mb-4 rounded-lg border border-green-100 bg-white p-4 shadow-sm">
+          <section className="mb-4 rounded-lg border border-[#D1D1D1] bg-white p-4 shadow-sm">
             <div className="mb-3 flex items-start justify-between gap-2">
               <div>
-                <h2 className="text-sm font-bold text-[#101D3A]">
+                <h2 className="text-sm font-bold text-[#141619]">
                   Create Staff
                 </h2>
 
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-[#141619]">
                   Organization: {staffOrganization.name}
                 </p>
               </div>
@@ -552,7 +552,7 @@ const AdminDashboard = () => {
                   setShowStaffPassword(false);
                   setError("");
                 }}
-                className="rounded-md p-1 text-slate-500 hover:bg-slate-100"
+                className="rounded-md p-1 text-[#141619] hover:bg-[#F3F3F3]"
                 aria-label="Close staff form"
               >
                 <FaTimes />
@@ -562,7 +562,7 @@ const AdminDashboard = () => {
             <form onSubmit={handleCreateStaff} className="space-y-3">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-700">
+                  <label className="mb-1 block text-xs font-medium text-[#141619]">
                     Full Name *
                   </label>
 
@@ -576,12 +576,12 @@ const AdminDashboard = () => {
                     }
                     required
                     placeholder="Enter staff name"
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-xs outline-none focus:border-blue-500"
+                    className="w-full rounded-md border border-[#D1D1D1] px-3 py-2 text-xs outline-none focus:border-[#141619]"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-700">
+                  <label className="mb-1 block text-xs font-medium text-[#141619]">
                     Email *
                   </label>
 
@@ -596,12 +596,12 @@ const AdminDashboard = () => {
                     }
                     required
                     placeholder="staff@example.com"
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-xs outline-none focus:border-blue-500"
+                    className="w-full rounded-md border border-[#D1D1D1] px-3 py-2 text-xs outline-none focus:border-[#141619]"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-700">
+                  <label className="mb-1 block text-xs font-medium text-[#141619]">
                     Phone
                   </label>
 
@@ -615,13 +615,13 @@ const AdminDashboard = () => {
                       }))
                     }
                     placeholder="Phone number"
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-xs outline-none focus:border-blue-500"
+                    className="w-full rounded-md border border-[#D1D1D1] px-3 py-2 text-xs outline-none focus:border-[#141619]"
                   />
                 </div>
 
                 {/* Password with functional eye icon */}
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-700">
+                  <label className="mb-1 block text-xs font-medium text-[#141619]">
                     Password * (minimum 8 characters)
                   </label>
 
@@ -638,7 +638,7 @@ const AdminDashboard = () => {
                       required
                       minLength={8}
                       placeholder="Create a password"
-                      className="w-full rounded-md border border-slate-300 px-3 py-2 pr-10 text-xs outline-none focus:border-blue-500"
+                      className="w-full rounded-md border border-[#D1D1D1] px-3 py-2 pr-10 text-xs outline-none focus:border-[#141619]"
                     />
 
                     <button
@@ -646,7 +646,7 @@ const AdminDashboard = () => {
                       onClick={() =>
                         setShowStaffPassword((prev) => !prev)
                       }
-                      className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-500 hover:text-blue-600"
+                      className="absolute inset-y-0 right-0 flex items-center px-3 text-[#141619] hover:text-[#141619]"
                       aria-label={
                         showStaffPassword
                           ? "Hide password"
@@ -673,7 +673,7 @@ const AdminDashboard = () => {
                     setShowStaffPassword(false);
                     setError("");
                   }}
-                  className="rounded-md border border-slate-300 px-3 py-2 text-xs"
+                  className="rounded-md border border-[#D1D1D1] px-3 py-2 text-xs"
                 >
                   Cancel
                 </button>
@@ -681,7 +681,7 @@ const AdminDashboard = () => {
                 <button
                   type="submit"
                   disabled={submittingStaff}
-                  className="rounded-md bg-green-600 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                  className="rounded-md bg-[#141619] px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
                 >
                   {submittingStaff ? "Creating..." : "Create & Assign Staff"}
                 </button>
@@ -692,14 +692,14 @@ const AdminDashboard = () => {
 
         {/* Assign Existing Staff Form */}
         {showAssignForm && assignOrganization && (
-          <section className="mb-4 rounded-lg border border-indigo-100 bg-white p-4 shadow-sm">
+          <section className="mb-4 rounded-lg border border-[#D1D1D1] bg-white p-4 shadow-sm">
             <div className="mb-3 flex items-start justify-between gap-2">
               <div>
-                <h2 className="text-sm font-bold text-[#101D3A]">
+                <h2 className="text-sm font-bold text-[#141619]">
                   Assign Existing Staff
                 </h2>
 
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-[#141619]">
                   Organization: {assignOrganization.name}
                 </p>
               </div>
@@ -711,7 +711,7 @@ const AdminDashboard = () => {
                   setAssignOrganization(null);
                   setError("");
                 }}
-                className="rounded-md p-1 text-slate-500 hover:bg-slate-100"
+                className="rounded-md p-1 text-[#141619] hover:bg-[#F3F3F3]"
                 aria-label="Close assign staff form"
               >
                 <FaTimes />
@@ -720,7 +720,7 @@ const AdminDashboard = () => {
 
             <form onSubmit={handleAssignStaff} className="space-y-3">
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-700">
+                <label className="mb-1 block text-xs font-medium text-[#141619]">
                   Staff Member *
                 </label>
 
@@ -729,7 +729,7 @@ const AdminDashboard = () => {
                   onChange={(e) => setSelectedStaffId(e.target.value)}
                   required
                   disabled={loadingStaff || staffMembers.length === 0}
-                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-xs outline-none focus:border-blue-500 disabled:bg-slate-50"
+                  className="w-full rounded-md border border-[#D1D1D1] bg-white px-3 py-2 text-xs outline-none focus:border-[#141619] disabled:bg-[#FFFFFF]"
                 >
                   <option value="">
                     {loadingStaff
@@ -758,7 +758,7 @@ const AdminDashboard = () => {
                     setAssignOrganization(null);
                     setError("");
                   }}
-                  className="rounded-md border border-slate-300 px-3 py-2 text-xs"
+                  className="rounded-md border border-[#D1D1D1] px-3 py-2 text-xs"
                 >
                   Cancel
                 </button>
@@ -770,7 +770,7 @@ const AdminDashboard = () => {
                     loadingStaff ||
                     !selectedStaffId
                   }
-                  className="rounded-md bg-indigo-600 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                  className="rounded-md bg-[#141619] px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
                 >
                   {submittingAssignment ? "Assigning..." : "Assign Staff"}
                 </button>
@@ -781,14 +781,14 @@ const AdminDashboard = () => {
 
         {/* Add Service Form */}
         {selectedOrganization && (
-          <section className="mb-4 rounded-lg border border-blue-100 bg-white p-4 shadow-sm">
+          <section className="mb-4 rounded-lg border border-[#D1D1D1] bg-white p-4 shadow-sm">
             <div className="mb-3 flex items-start justify-between gap-2">
               <div>
-                <h2 className="text-sm font-bold text-[#101D3A]">
+                <h2 className="text-sm font-bold text-[#141619]">
                   Add Service
                 </h2>
 
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-[#141619]">
                   Organization: {selectedOrganization.name}
                 </p>
               </div>
@@ -799,7 +799,7 @@ const AdminDashboard = () => {
                   setSelectedOrganization(null);
                   setError("");
                 }}
-                className="rounded-md p-1 text-slate-500 hover:bg-slate-100"
+                className="rounded-md p-1 text-[#141619] hover:bg-[#F3F3F3]"
                 aria-label="Close service form"
               >
                 <FaTimes />
@@ -808,7 +808,7 @@ const AdminDashboard = () => {
 
             <form onSubmit={handleCreateService} className="space-y-3">
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-700">
+                <label className="mb-1 block text-xs font-medium text-[#141619]">
                   Service Name *
                 </label>
 
@@ -822,12 +822,12 @@ const AdminDashboard = () => {
                   }
                   required
                   placeholder="e.g. Marks Card Collection"
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-xs outline-none focus:border-blue-500"
+                  className="w-full rounded-md border border-[#D1D1D1] px-3 py-2 text-xs outline-none focus:border-[#141619]"
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-700">
+                <label className="mb-1 block text-xs font-medium text-[#141619]">
                   Description
                 </label>
 
@@ -841,12 +841,12 @@ const AdminDashboard = () => {
                   }
                   rows={2}
                   placeholder="Describe this service"
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-xs outline-none focus:border-blue-500"
+                  className="w-full rounded-md border border-[#D1D1D1] px-3 py-2 text-xs outline-none focus:border-[#141619]"
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-700">
+                <label className="mb-1 block text-xs font-medium text-[#141619]">
                   Estimated Duration (minutes) *
                 </label>
 
@@ -862,7 +862,7 @@ const AdminDashboard = () => {
                     }))
                   }
                   required
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-xs outline-none focus:border-blue-500"
+                  className="w-full rounded-md border border-[#D1D1D1] px-3 py-2 text-xs outline-none focus:border-[#141619]"
                 />
               </div>
 
@@ -870,7 +870,7 @@ const AdminDashboard = () => {
                 <button
                   type="button"
                   onClick={() => setSelectedOrganization(null)}
-                  className="rounded-md border border-slate-300 px-3 py-2 text-xs"
+                  className="rounded-md border border-[#D1D1D1] px-3 py-2 text-xs"
                 >
                   Cancel
                 </button>
@@ -878,7 +878,7 @@ const AdminDashboard = () => {
                 <button
                   type="submit"
                   disabled={submittingService}
-                  className="rounded-md bg-blue-600 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                  className="rounded-md bg-[#141619] px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
                 >
                   {submittingService ? "Adding..." : "Add Service"}
                 </button>
@@ -889,56 +889,56 @@ const AdminDashboard = () => {
 
         {/* Statistics */}
         <section className="mb-4 grid grid-cols-2 gap-3">
-          <article className="rounded-lg border border-blue-100 bg-white p-3 shadow-sm">
+          <article className="rounded-lg border border-[#D1D1D1] bg-white p-3 shadow-sm">
             <div className="flex items-center justify-between">
-              <p className="text-[11px] text-slate-500 sm:text-xs">
+              <p className="text-[11px] text-[#141619] sm:text-xs">
                 Total Organizations
               </p>
 
-              <FaBuilding className="text-sm text-blue-600" />
+              <FaBuilding className="text-sm text-[#141619]" />
             </div>
 
-            <p className="mt-1 text-xl font-bold text-[#101D3A]">
+            <p className="mt-1 text-xl font-bold text-[#141619]">
               {organizations.length}
             </p>
           </article>
 
-          <article className="rounded-lg border border-blue-100 bg-white p-3 shadow-sm">
-            <p className="text-[11px] text-slate-500 sm:text-xs">
+          <article className="rounded-lg border border-[#D1D1D1] bg-white p-3 shadow-sm">
+            <p className="text-[11px] text-[#141619] sm:text-xs">
               Active Organizations
             </p>
 
-            <p className="mt-1 text-xl font-bold text-green-600">
+            <p className="mt-1 text-xl font-bold text-[#141619]">
               {activeCount}
             </p>
           </article>
         </section>
 
         {/* Organization List */}
-        <section className="overflow-hidden rounded-lg border border-blue-100 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2.5">
-            <h2 className="text-sm font-bold text-[#101D3A]">
+        <section className="overflow-hidden rounded-lg border border-[#D1D1D1] bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-[#D1D1D1] px-3 py-2.5">
+            <h2 className="text-sm font-bold text-[#141619]">
               Organizations
             </h2>
 
-            <span className="rounded-full bg-blue-50 px-2 py-1 text-[10px] font-semibold text-blue-700">
+            <span className="rounded-full bg-[#FFFFFF] px-2 py-1 text-[10px] font-semibold text-[#141619]">
               {organizations.length} total
             </span>
           </div>
 
           {loading ? (
-            <p className="p-5 text-center text-xs text-slate-500">
+            <p className="p-5 text-center text-xs text-[#141619]">
               Loading organizations...
             </p>
           ) : organizations.length === 0 ? (
             <div className="p-5 text-center">
-              <FaBuilding className="mx-auto text-xl text-slate-300" />
+              <FaBuilding className="mx-auto text-xl text-[#FFFFFF]" />
 
-              <p className="mt-2 text-sm font-semibold text-slate-700">
+              <p className="mt-2 text-sm font-semibold text-[#141619]">
                 No organizations found
               </p>
 
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-[#141619]">
                 Create an organization to get started.
               </p>
             </div>
@@ -952,19 +952,19 @@ const AdminDashboard = () => {
                 return (
                   <article
                     key={organizationId}
-                    className="rounded-lg border border-slate-200 p-2.5 transition hover:border-blue-300"
+                    className="rounded-lg border border-[#D1D1D1] p-2.5 transition hover:border-[#D1D1D1]"
                   >
                     <div className="flex items-start gap-2">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-blue-50 text-xs text-blue-600">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#FFFFFF] text-xs text-[#141619]">
                         <FaBuilding />
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <h3 className="break-words text-xs font-bold text-[#101D3A] sm:text-sm">
+                        <h3 className="break-words text-xs font-bold text-[#141619] sm:text-sm">
                           {org.name}
                         </h3>
 
-                        <p className="mt-0.5 text-[10px] capitalize text-slate-500">
+                        <p className="mt-0.5 text-[10px] capitalize text-[#141619]">
                           {org.type}
                         </p>
                       </div>
@@ -972,42 +972,42 @@ const AdminDashboard = () => {
                       <span
                         className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${
                           org.isActive
-                            ? "bg-green-50 text-green-700"
-                            : "bg-red-50 text-red-700"
+                            ? "bg-[#FFFFFF] text-[#141619]"
+                            : "bg-[#FFFFFF] text-[#141619]"
                         }`}
                       >
                         {org.isActive ? "Active" : "Inactive"}
                       </span>
                     </div>
 
-                    <p className="mt-2 break-words text-[11px] text-slate-600">
+                    <p className="mt-2 break-words text-[11px] text-[#141619]">
                       {org.address}
                     </p>
 
                     {org.description && (
-                      <p className="mt-1 break-words text-[11px] leading-4 text-slate-500">
+                      <p className="mt-1 break-words text-[11px] leading-4 text-[#141619]">
                         {org.description}
                       </p>
                     )}
 
                     {/* Existing Services */}
-                    <div className="mt-3 border-t border-slate-100 pt-2">
+                    <div className="mt-3 border-t border-[#D1D1D1] pt-2">
                       <div className="mb-2 flex items-center justify-between">
-                        <h4 className="text-[11px] font-semibold text-slate-700">
+                        <h4 className="text-[11px] font-semibold text-[#141619]">
                           Services
                         </h4>
 
-                        <span className="text-[10px] text-slate-500">
+                        <span className="text-[10px] text-[#141619]">
                           {services.length}
                         </span>
                       </div>
 
                       {loadingServices[organizationId] ? (
-                        <p className="text-[11px] text-slate-500">
+                        <p className="text-[11px] text-[#141619]">
                           Loading services...
                         </p>
                       ) : services.length === 0 ? (
-                        <p className="text-[11px] text-slate-500">
+                        <p className="text-[11px] text-[#141619]">
                           No services added yet.
                         </p>
                       ) : (
@@ -1015,21 +1015,21 @@ const AdminDashboard = () => {
                           {services.map((service) => (
                             <div
                               key={service._id}
-                              className="flex items-center justify-between gap-2 rounded-md bg-slate-50 px-2 py-1.5"
+                              className="flex items-center justify-between gap-2 rounded-md bg-[#FFFFFF] px-2 py-1.5"
                             >
                               <div className="min-w-0">
-                                <p className="break-words text-[11px] font-medium text-slate-800">
+                                <p className="break-words text-[11px] font-medium text-[#141619]">
                                   {service.name}
                                 </p>
 
                                 {service.description && (
-                                  <p className="mt-0.5 break-words text-[10px] text-slate-500">
+                                  <p className="mt-0.5 break-words text-[10px] text-[#141619]">
                                     {service.description}
                                   </p>
                                 )}
                               </div>
 
-                              <span className="shrink-0 rounded-full bg-blue-50 px-2 py-1 text-[10px] text-blue-700">
+                              <span className="shrink-0 rounded-full bg-[#FFFFFF] px-2 py-1 text-[10px] text-[#141619]">
                                 {service.estimatedDuration} min
                               </span>
                             </div>
@@ -1039,12 +1039,12 @@ const AdminDashboard = () => {
                     </div>
 
                     {/* Organization Actions */}
-                    <div className="mt-3 flex flex-wrap gap-2 border-t border-slate-100 pt-2">
+                    <div className="mt-3 flex flex-wrap gap-2 border-t border-[#D1D1D1] pt-2">
                       <button
                         type="button"
                         onClick={() => openServiceForm(org)}
                         disabled={!org.isActive}
-                        className="flex items-center gap-1.5 rounded-md bg-blue-50 px-2.5 py-1.5 text-[11px] font-semibold text-blue-700 hover:bg-blue-100 disabled:opacity-50"
+                        className="flex items-center gap-1.5 rounded-md bg-[#FFFFFF] px-2.5 py-1.5 text-[11px] font-semibold text-[#141619] hover:bg-[#F3F3F3] disabled:opacity-50"
                       >
                         <FaConciergeBell />
                         Add Service
@@ -1054,7 +1054,7 @@ const AdminDashboard = () => {
                         type="button"
                         onClick={() => openCreateStaffForm(org)}
                         disabled={!org.isActive}
-                        className="flex items-center gap-1.5 rounded-md bg-green-50 px-2.5 py-1.5 text-[11px] font-semibold text-green-700 hover:bg-green-100 disabled:opacity-50"
+                        className="flex items-center gap-1.5 rounded-md bg-[#FFFFFF] px-2.5 py-1.5 text-[11px] font-semibold text-[#141619] hover:bg-[#F3F3F3] disabled:opacity-50"
                       >
                         <FaUserPlus />
                         Create Staff
@@ -1064,7 +1064,7 @@ const AdminDashboard = () => {
                         type="button"
                         onClick={() => openAssignStaffForm(org)}
                         disabled={!org.isActive}
-                        className="flex items-center gap-1.5 rounded-md bg-indigo-50 px-2.5 py-1.5 text-[11px] font-semibold text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
+                        className="flex items-center gap-1.5 rounded-md bg-[#FFFFFF] px-2.5 py-1.5 text-[11px] font-semibold text-[#141619] hover:bg-[#F3F3F3] disabled:opacity-50"
                       >
                         <FaUsers />
                         Assign Staff
