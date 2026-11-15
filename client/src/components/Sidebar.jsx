@@ -9,8 +9,6 @@ import {
   FiCreditCard,
   FiLayers,
   FiBell,
-  FiSettings,
-  FiHelpCircle,
   FiLogOut,
 } from "react-icons/fi";
 
@@ -109,36 +107,12 @@ const Sidebar = () => {
               </NavLink>
 
             </nav>
-
-            <div className="my-4 border-t border-[#3A3A3A]" />
-
-            <p className="mb-3 px-2 text-[10px] font-bold uppercase tracking-[1.3px] text-white">
-              Preferences
-            </p>
-
-            <nav>
-              <button
-                type="button"
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium text-white transition hover:bg-[#D1D1D1] hover:text-white"
-              >
-                <FiSettings size={18} />
-                Settings
-              </button>
-            </nav>
           </>
         )}
       </div>
 
       {/* Bottom section */}
       <div className="shrink-0 border-t border-[#3A3A3A] px-4 py-4">
-
-        <button
-          type="button"
-          className="mb-4 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium text-white transition hover:bg-[#D1D1D1] hover:text-white"
-        >
-          <FiHelpCircle size={19} />
-          Help & Support
-        </button>
 
         {isAuthenticated ? (
           <div className="flex items-center gap-2 rounded-xl border border-[#D1D1D1] bg-[#FFFFFF] p-2">
