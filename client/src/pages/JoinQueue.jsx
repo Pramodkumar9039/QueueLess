@@ -261,8 +261,8 @@ const JoinQueue = () => {
   // Loading state.
   if (loading) {
     return (
-      <main className="flex min-h-[calc(100vh-120px)] items-center justify-center rounded-xl bg-[#FFFFFF] p-4">
-        <div className="rounded-xl bg-white px-8 py-6 text-sm text-[#141619] shadow-sm">
+      <main className="flex min-h-[calc(100vh-120px)] items-center justify-center rounded-xl bg-[#EAF3FB] p-4">
+        <div className="rounded-xl bg-white px-8 py-6 text-sm text-[#52647E] shadow-sm">
           Loading queue details...
         </div>
       </main>
@@ -272,13 +272,13 @@ const JoinQueue = () => {
   // Error state.
   if (error && (!service || !organization)) {
     return (
-      <main className="flex min-h-[calc(100vh-120px)] items-center justify-center rounded-xl bg-[#FFFFFF] p-4">
-        <div className="rounded-xl border border-[#D1D1D1] bg-white p-8 text-center shadow-sm">
-          <p className="text-sm text-[#141619]">{error}</p>
+      <main className="flex min-h-[calc(100vh-120px)] items-center justify-center rounded-xl bg-[#EAF3FB] p-4">
+        <div className="rounded-xl border border-[#E5EBF3] bg-white p-8 text-center shadow-sm">
+          <p className="text-sm text-red-600">{error}</p>
 
           <Link
             to="/"
-            className="mt-4 inline-block text-sm text-[#141619] hover:underline"
+            className="mt-4 inline-block text-sm text-blue-600 hover:underline"
           >
             Back to Home
           </Link>
@@ -288,7 +288,7 @@ const JoinQueue = () => {
   }
 
   return (
-    <main className="flex min-h-[calc(100vh-120px)] w-full items-center justify-center rounded-xl bg-gradient-to-br from-[#FFFFFF] via-[#FFFFFF] to-[#FFFFFF] px-3 py-6 sm:px-5">
+    <main className="flex min-h-[calc(100vh-120px)] w-full items-center justify-center rounded-xl bg-gradient-to-br from-[#F0F7FE] via-[#E1EFFB] to-[#D6E8F8] px-3 py-6 sm:px-5">
 
       {/* Join Queue Card */}
       <div className="mx-auto w-full max-w-[500px]">
@@ -296,15 +296,15 @@ const JoinQueue = () => {
         <section className="overflow-hidden rounded-2xl border border-white/80 bg-white shadow-[0_20px_60px_rgba(44,78,115,0.16)]">
 
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-[#D1D1D1] px-5 py-3.5 sm:px-6">
-            <h1 className="text-lg font-bold text-[#141619]">
+          <div className="flex items-center justify-between border-b border-[#E9EEF5] px-5 py-3.5 sm:px-6">
+            <h1 className="text-lg font-bold text-[#101B35]">
               Join Queue
             </h1>
 
             <Link
               to={`/organizations/${organization._id}`}
               aria-label="Close"
-              className="flex h-8 w-8 items-center justify-center rounded-full text-lg text-[#141619] transition hover:bg-[#F3F3F3]"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-lg text-[#526078] transition hover:bg-[#F0F5FB]"
             >
               <FiX size={17} />
             </Link>
@@ -317,20 +317,20 @@ const JoinQueue = () => {
               <img
                 src={organizationImage}
                 alt={organization.name}
-                className="h-[88px] w-[104px] shrink-0 rounded-xl border border-[#D1D1D1] object-cover"
+                className="h-[88px] w-[104px] shrink-0 rounded-xl border border-[#E6EDF5] object-cover"
               />
 
               <div className="min-w-0">
-                <h2 className="text-lg font-bold leading-6 text-[#141619]">
+                <h2 className="text-lg font-bold leading-6 text-[#101B35]">
                   {organization.name}
                 </h2>
 
-                <span className="mt-1 inline-flex rounded-full bg-[#FFFFFF] px-2.5 py-1 text-xs font-medium text-[#141619]">
+                <span className="mt-1 inline-flex rounded-full bg-[#EAF3FF] px-2.5 py-1 text-xs font-medium text-[#4779C5]">
                   <FiMapPin className="mr-1 mt-0.5" size={11} />
                   {organization.type || "Organization"}
                 </span>
 
-                <p className="mt-2 text-sm font-medium text-[#141619]">
+                <p className="mt-2 text-sm font-medium text-[#526078]">
                   {service.name}
                 </p>
               </div>
@@ -350,7 +350,7 @@ const JoinQueue = () => {
             {isClosed && (
               <div
                 role="status"
-                className="mt-5 flex items-center gap-2 rounded-lg border border-[#141619] bg-[#FFFFFF] px-3 py-3 text-sm text-[#141619]"
+                className="mt-5 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-sm text-red-700"
               >
                 <FiAlertCircle size={15} />
                 Queue is currently closed.
@@ -360,34 +360,34 @@ const JoinQueue = () => {
             {queueStatus === "open" && (
               <div
                 role="status"
-                className="mt-5 flex items-center gap-2 rounded-lg bg-[#FFFFFF] px-3 py-2.5 text-sm text-[#141619]"
+                className="mt-5 flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2.5 text-sm text-green-700"
               >
-                <span className="h-2 w-2 shrink-0 rounded-full bg-[#141619]" />
+                <span className="h-2 w-2 shrink-0 rounded-full bg-green-500" />
                 Queue is open and accepting customers.
               </div>
             )}
 
             {/* Queue Statistics */}
-            <div className="mt-5 grid grid-cols-2 gap-3 rounded-xl bg-[#FFFFFF] p-4 sm:p-5">
+            <div className="mt-5 grid grid-cols-2 gap-3 rounded-xl bg-[#EAF3FF] p-4 sm:p-5">
 
               <div>
-                <p className="flex items-center gap-2 text-xs text-[#141619]">
-                  <FiClock size={16} className="text-[#141619]" />
+                <p className="flex items-center gap-2 text-xs text-[#526B91]">
+                  <FiClock size={16} className="text-[#1768F2]" />
                   Estimated Waiting Time
                 </p>
 
-                <p className="mt-2 pl-6 text-base font-bold text-[#141619]">
+                <p className="mt-2 pl-6 text-base font-bold text-[#101B35]">
                   ~{estimatedWait} minutes
                 </p>
               </div>
 
               <div>
-                <p className="flex items-center gap-2 text-xs text-[#141619]">
-                  <FiUsers size={16} className="text-[#141619]" />
+                <p className="flex items-center gap-2 text-xs text-[#526B91]">
+                  <FiUsers size={16} className="text-[#1768F2]" />
                   People Ahead
                 </p>
 
-                <p className="mt-2 pl-6 text-base font-bold text-[#141619]">
+                <p className="mt-2 pl-6 text-base font-bold text-[#101B35]">
                   {peopleAhead}
                 </p>
               </div>
@@ -398,7 +398,7 @@ const JoinQueue = () => {
             {error && (
               <p
                 role="alert"
-                className="mt-4 rounded-lg bg-[#FFFFFF] p-3 text-sm text-[#141619]"
+                className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600"
               >
                 {error}
               </p>
@@ -411,8 +411,8 @@ const JoinQueue = () => {
               disabled={joining || isUnavailable}
               className={`mt-5 w-full rounded-lg px-5 py-3 text-sm font-semibold text-white shadow-sm transition disabled:cursor-not-allowed disabled:opacity-60 ${
                 isUnavailable
-                  ? "bg-[#FFFFFF]"
-                  : "cursor-pointer bg-[#141619] hover:bg-[#141619]"
+                  ? "bg-gray-400"
+                  : "cursor-pointer bg-[#1768F2] hover:bg-[#1256CF]"
               }`}
             >
               {joining
@@ -427,7 +427,7 @@ const JoinQueue = () => {
             </button>
 
             {!token && (
-              <p className="mt-3 text-center text-xs text-[#141619]">
+              <p className="mt-3 text-center text-xs text-[#71809A]">
                 Please log in before joining the queue.
               </p>
             )}

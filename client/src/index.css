@@ -78,17 +78,17 @@ button:focus-visible,
 [role='button']:focus-visible,
 a[href]:focus-visible,
 .ui-card:focus-visible {
-  outline: 2px solid rgba(20, 22, 25, 0.5);
+  outline: 2px solid rgba(23, 104, 242, 0.5);
   outline-offset: 2px;
 }
 
 a[href]:hover,
 .ui-link:hover {
-  color: #141619;
+  color: #1768F2;
 }
 
 .ui-card:hover {
-  box-shadow: 0 10px 22px rgba(20, 22, 25, 0.08);
+  box-shadow: 0 10px 22px rgba(16, 27, 53, 0.08);
 }
 
 .ui-card:active {

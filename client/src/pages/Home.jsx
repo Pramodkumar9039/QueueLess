@@ -195,24 +195,24 @@ const Home = () => {
   return (
     <main className="w-full min-w-0">
 
-      <div className="w-full overflow-hidden rounded-xl border border-[#D1D1D1] bg-white shadow-sm">
+      <div className="w-full overflow-hidden rounded-xl border border-[#E5EBF3] bg-white shadow-sm">
 
         {/* Hero Section */}
-        <section className="relative grid min-h-[300px] overflow-hidden bg-gradient-to-r from-[#FFFFFF] via-[#FFFFFF] to-[#FFFFFF] md:grid-cols-2">
+        <section className="relative grid min-h-[300px] overflow-hidden bg-gradient-to-r from-[#F7FAFE] via-[#EDF5FC] to-[#DCEAF8] md:grid-cols-2">
 
           <div className="z-10 flex flex-col justify-center px-6 py-9 sm:px-10 md:py-10">
 
-            <p className="mb-3 text-[10px] font-semibold uppercase tracking-[1.5px] text-[#141619]">
+            <p className="mb-3 text-[10px] font-semibold uppercase tracking-[1.5px] text-[#7188A6]">
               Smart Queue Management
             </p>
 
-            <h1 className="max-w-[440px] text-4xl font-extrabold leading-[1.08] tracking-tight text-[#141619] sm:text-5xl">
+            <h1 className="max-w-[440px] text-4xl font-extrabold leading-[1.08] tracking-tight text-[#101D3A] sm:text-5xl">
               Skip the line,
               <br />
               Save your time
             </h1>
 
-            <p className="mt-4 max-w-[400px] text-xs leading-5 text-[#141619] sm:text-sm">
+            <p className="mt-4 max-w-[400px] text-xs leading-5 text-[#405574] sm:text-sm">
               Join queues for clinics, salons, college offices and more.
               <br className="hidden sm:block" />
               Get real-time updates and be notified when it’s your turn.
@@ -222,14 +222,14 @@ const Home = () => {
 
               <a
                 href="#organizations"
-                className="cursor-pointer rounded-lg bg-[#141619] px-4 py-3 text-xs font-semibold text-white shadow-sm transition hover:bg-[#141619]"
+                className="cursor-pointer rounded-lg bg-[#1768F2] px-4 py-3 text-xs font-semibold text-white shadow-sm transition hover:bg-[#1256CF]"
               >
                 Browse Organizations <span className="ml-1">→</span>
               </a>
 
               <a
                 href="#how-it-works"
-                className="cursor-pointer rounded-lg border border-[#D1D1D1] bg-white px-5 py-3 text-xs font-semibold text-[#141619] transition hover:bg-[#F3F3F3]"
+                className="cursor-pointer rounded-lg border border-[#E3EAF3] bg-white px-5 py-3 text-xs font-semibold text-[#263653] transition hover:bg-[#F5F8FC]"
               >
                 How it works
               </a>
@@ -246,12 +246,12 @@ const Home = () => {
               className="absolute inset-0 h-full w-full object-cover"
             />
 
-            <div className="absolute inset-0 bg-gradient-to-r from-[#FFFFFF] via-[#FFFFFF]/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#EDF5FC] via-[#EDF5FC]/30 to-transparent" />
 
             {/* Queue Preview Card */}
-            <div className="absolute right-5 top-8 w-[105px] rounded-xl bg-[#141619] p-3 text-white shadow-xl sm:right-10 sm:top-10">
+            <div className="absolute right-5 top-8 w-[105px] rounded-xl bg-[#192A42] p-3 text-white shadow-xl sm:right-10 sm:top-10">
 
-              <p className="text-center text-[9px] text-[#FFFFFF]">
+              <p className="text-center text-[9px] text-blue-100">
                 Now Serving
               </p>
 
@@ -259,7 +259,7 @@ const Home = () => {
                 A12
               </p>
 
-              <div className="space-y-1 text-[10px] text-[#FFFFFF]">
+              <div className="space-y-1 text-[10px] text-blue-100">
                 <p className="rounded bg-white/10 px-2 py-1">A11</p>
                 <p className="rounded bg-white/10 px-2 py-1">A10</p>
                 <p className="rounded bg-white/10 px-2 py-1">A09</p>
@@ -281,8 +281,8 @@ const Home = () => {
                 onClick={() => setActiveCategory(category)}
                 className={`cursor-pointer rounded-xl border px-3.5 py-2.5 text-[11px] font-semibold transition ${
                   activeCategory === category
-                    ? "border-[#141619] bg-[#141619] text-white shadow-sm"
-                    : "border-[#D1D1D1] bg-white text-[#141619] hover:border-[#D1D1D1] hover:bg-[#F3F3F3]"
+                    ? "border-[#1768F2] bg-[#1768F2] text-white shadow-sm"
+                    : "border-[#E7EDF5] bg-white text-[#263653] hover:border-[#BDDDFC] hover:bg-[#F5F9FF]"
                 }`}
               >
                 <span className="mr-1.5">
@@ -314,7 +314,7 @@ const Home = () => {
 
           <div className="mb-4 flex items-center justify-between gap-3">
 
-            <h2 className="text-lg font-bold tracking-tight text-[#141619] sm:text-xl">
+            <h2 className="text-lg font-bold tracking-tight text-[#111D38] sm:text-xl">
               Popular Organizations
             </h2>
 
@@ -324,7 +324,7 @@ const Home = () => {
                 setActiveCategory("All Places");
                 setSearch("");
               }}
-              className="shrink-0 cursor-pointer text-xs font-semibold text-[#141619] hover:underline"
+              className="shrink-0 cursor-pointer text-xs font-semibold text-[#1768F2] hover:underline"
             >
               View All <span className="ml-1">→</span>
             </button>
@@ -339,7 +339,7 @@ const Home = () => {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search organizations..."
-              className="w-full rounded-lg border border-[#D1D1D1] bg-[#FFFFFF] px-4 py-2.5 text-sm outline-none transition focus:border-[#141619] sm:max-w-sm"
+              className="w-full rounded-lg border border-[#E3EAF3] bg-[#F8FAFD] px-4 py-2.5 text-sm outline-none transition focus:border-[#88BDF2] sm:max-w-sm"
               aria-label="Search organizations"
             />
 
@@ -347,27 +347,27 @@ const Home = () => {
 
           {/* Loading */}
           {loading && (
-            <div className="py-10 text-center text-sm text-[#141619]">
+            <div className="py-10 text-center text-sm text-[#71809A]">
               Loading organizations...
             </div>
           )}
 
           {/* Error */}
           {!loading && error && (
-            <div className="rounded-xl border border-[#D1D1D1] bg-[#FFFFFF] px-4 py-6 text-center">
+            <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-6 text-center">
 
-              <p className="text-sm font-semibold text-[#141619]">
+              <p className="text-sm font-semibold text-red-700">
                 Unable to load organizations
               </p>
 
-              <p className="mt-1 text-xs text-[#141619]">
+              <p className="mt-1 text-xs text-red-600">
                 {error}
               </p>
 
               <button
                 type="button"
                 onClick={() => window.location.reload()}
-                className="mt-3 cursor-pointer rounded-lg bg-[#141619] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#141619]"
+                className="mt-3 cursor-pointer rounded-lg bg-[#1768F2] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#1256CF]"
               >
                 Try Again
               </button>
@@ -402,7 +402,7 @@ const Home = () => {
                   return (
                     <article
                       key={organizationId}
-                      className="group overflow-hidden rounded-xl border border-[#D1D1D1] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                      className="group overflow-hidden rounded-xl border border-[#E5EBF3] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                     >
 
                       <img
@@ -416,21 +416,21 @@ const Home = () => {
 
                         <div className="mb-2 flex items-center justify-between gap-2">
 
-                          <span className="rounded-full bg-[#FFFFFF] px-2 py-1 text-[10px] font-semibold text-[#141619]">
+                          <span className="rounded-full bg-[#DDF6E5] px-2 py-1 text-[10px] font-semibold text-[#237847]">
                             ● {type}
                           </span>
 
                         </div>
 
-                        <h3 className="truncate text-xs font-bold text-[#141619] sm:text-sm">
+                        <h3 className="truncate text-xs font-bold text-[#111D38] sm:text-sm">
                           {organization.name}
                         </h3>
 
-                        <p className="mt-1 line-clamp-2 min-h-8 text-[11px] text-[#141619]">
+                        <p className="mt-1 line-clamp-2 min-h-8 text-[11px] text-[#75839A]">
                           {description}
                         </p>
 
-                        <div className="mt-3 flex items-center gap-2 text-[11px] text-[#141619]">
+                        <div className="mt-3 flex items-center gap-2 text-[11px] text-[#52647E]">
 
                           <span aria-hidden="true">♧</span>
 
@@ -444,7 +444,7 @@ const Home = () => {
 
                         <Link
                           to={`/organizations/${organizationId}`}
-                          className="mt-3 block cursor-pointer rounded-lg bg-[#141619] px-3 py-2 text-center text-xs font-semibold text-white transition hover:bg-[#141619]"
+                          className="mt-3 block cursor-pointer rounded-lg bg-[#1768F2] px-3 py-2 text-center text-xs font-semibold text-white transition hover:bg-[#1256CF]"
                         >
                           View Organization
                         </Link>
@@ -458,13 +458,13 @@ const Home = () => {
 
               {/* No Organizations Found */}
               {filteredOrganizations.length === 0 && (
-                <div className="rounded-xl border border-dashed border-[#D1D1D1] py-10 text-center">
+                <div className="rounded-xl border border-dashed border-[#C9D8EA] py-10 text-center">
 
-                  <p className="font-semibold text-[#141619]">
+                  <p className="font-semibold text-[#263653]">
                     No organizations found
                   </p>
 
-                  <p className="mt-1 text-sm text-[#141619]">
+                  <p className="mt-1 text-sm text-[#71809A]">
                     Try another search or category.
                   </p>
 
@@ -482,7 +482,7 @@ const Home = () => {
         id="how-it-works"
         className="mx-auto scroll-mt-4 px-2 py-5"
       >
-        <p className="text-center text-xs text-[#141619]">
+        <p className="text-center text-xs text-[#71809A]">
           Find a service, join a queue, and track your turn with QueueLess.
         </p>
       </section>

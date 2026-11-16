@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
@@ -5,7 +6,7 @@ import Topbar from "./Topbar";
 
 const MainLayout = () => {
   return (
-    <div className="min-h-screen bg-[#FFFFFF]">
+    <div className="min-h-screen bg-[#F4F7FC]">
 
       {/* Fixed left sidebar */}
       <Sidebar />

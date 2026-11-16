@@ -15,20 +15,20 @@ const Navbar = () => {
   const linkClass = ({ isActive }) =>
     `cursor-pointer whitespace-nowrap text-[13px] font-medium transition-colors duration-200 ${
       isActive
-        ? "text-[#141619]"
-        : "text-[#141619] hover:text-[#141619]"
+        ? "text-[#0056B8]"
+        : "text-[#46546A] hover:text-[#0056B8]"
     }`;
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md
-           shadow-[0_4px_20px_rgba(20,22,25,0.10)]
-           border-b border-[#D1D1D1]">
+           shadow-[0_4px_20px_rgba(56,73,89,0.10)]
+           border-b border-[#E0EAF5]">
       <nav className="mx-auto flex min-h-[64px] max-w-[1440px] items-center justify-between gap-4 px-5 sm:px-8">
 
         {/* Logo */}
         <Link
           to="/"
-          className="shrink-0 text-[23px] font-extrabold tracking-tight text-[#141619] transition hover:opacity-80"
+          className="shrink-0 text-[23px] font-extrabold tracking-tight text-[#0759B5] transition hover:opacity-80"
         >
           QueueLess
         </Link>
@@ -54,7 +54,7 @@ const Navbar = () => {
         <div className="flex shrink-0 items-center gap-3 sm:gap-4">
           {isAuthenticated ? (
             <>
-              <span className="hidden max-w-[160px] truncate text-[13px] font-medium text-[#141619] lg:block">
+              <span className="hidden max-w-[160px] truncate text-[13px] font-medium text-[#46546A] lg:block">
                 {user?.name || "Account"}
               </span>
 
@@ -62,7 +62,7 @@ const Navbar = () => {
         <button
             type="button"
             onClick={handleLogout}
-            className="cursor-pointer rounded-lg bg-[#141619] px-5 py-2 text-[13px] font-semibold text-white shadow-sm transition hover:bg-[#141619]"
+            className="cursor-pointer rounded-lg bg-[#0759B5] px-5 py-2 text-[13px] font-semibold text-white shadow-sm transition hover:bg-[#064A96]"
         >
         Logout
         </button>
@@ -72,14 +72,14 @@ const Navbar = () => {
             <>
               <Link
                 to="/register"
-                className="hidden cursor-pointer text-[13px] font-medium text-[#141619] transition hover:text-[#141619] sm:inline-block"
+                className="hidden cursor-pointer text-[13px] font-medium text-[#46546A] transition hover:text-[#0056B8] sm:inline-block"
               >
                 Register
               </Link>
 
               <Link
                 to="/login"
-                className="cursor-pointer rounded-lg bg-[#141619] px-5 py-2 text-[13px] font-semibold text-white shadow-sm transition hover:bg-[#141619]"
+                className="cursor-pointer rounded-lg bg-[#0759B5] px-5 py-2 text-[13px] font-semibold text-white shadow-sm transition hover:bg-[#064A96]"
               >
                 Login
               </Link>

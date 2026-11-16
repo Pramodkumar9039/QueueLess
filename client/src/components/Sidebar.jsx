@@ -4,11 +4,14 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 import {
+  FiHome,
   FiGrid,
   FiUsers,
   FiCreditCard,
   FiLayers,
   FiBell,
+  FiSettings,
+  FiHelpCircle,
   FiLogOut,
 } from "react-icons/fi";
 
@@ -24,19 +27,19 @@ const Sidebar = () => {
   const navClass = ({ isActive }) =>
     `flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-all duration-200 ${
       isActive
-      ? "bg-[#2A2A2A] text-white"
-        : "bg-[#141619] text-white hover:bg-[#D1D1D1] hover:text-white"
+        ? "bg-[#DCEBFF] text-[#0759B5]"
+        : "text-[#34445F] hover:bg-[#F0F5FC] hover:text-[#0759B5]"
     }`;
 
   return (
-    <aside className="fixed left-0 top-0 z-50 flex h-screen w-[250px] flex-col border-r border-[#3A3A3A] bg-[#141619]">
+    <aside className="fixed left-0 top-0 z-50 flex h-screen w-[250px] flex-col border-r border-[#E0EAF5] bg-white">
 
       {/* Logo */}
       <Link
         to="/"
-        className="flex h-[70px] shrink-0 items-center gap-2 border-b border-[#3A3A3A] px-6"
+        className="flex h-[70px] shrink-0 items-center gap-2 border-b border-[#E8EEF6] px-6"
       >
-        <span className="text-[22px] font-extrabold tracking-tight text-white">
+        <span className="text-[22px] font-extrabold tracking-tight text-[#0759B5]">
           QueueLess
         </span>
       </Link>
@@ -50,7 +53,7 @@ const Sidebar = () => {
       >
 
         {/* Main navigation */}
-        <p className="mb-3 px-2 text-[10px] font-bold uppercase tracking-[1.3px] text-white">
+        <p className="mb-3 px-2 text-[10px] font-bold uppercase tracking-[1.3px] text-[#71829B]">
           Navigation
         </p>
 
@@ -80,9 +83,9 @@ const Sidebar = () => {
         {/* Queue operations */}
         {isAuthenticated && (
           <>
-            <div className="my-4 border-t border-[#3A3A3A]" />
+            <div className="my-4 border-t border-[#E3EAF3]" />
 
-            <p className="mb-3 px-2 text-[10px] font-bold uppercase tracking-[1.3px] text-white">
+            <p className="mb-3 px-2 text-[10px] font-bold uppercase tracking-[1.3px] text-[#71829B]">
               Queue Operations
             </p>
 
@@ -103,29 +106,53 @@ const Sidebar = () => {
               <NavLink to="/dashboard" className={navClass}>
                 <FiBell size={18} />
                 Notifications
-                <span className="ml-auto h-2 w-2 rounded-full bg-[#141619]" />
+                <span className="ml-auto h-2 w-2 rounded-full bg-[#1768F2]" />
               </NavLink>
 
+            </nav>
+
+            <div className="my-4 border-t border-[#E3EAF3]" />
+
+            <p className="mb-3 px-2 text-[10px] font-bold uppercase tracking-[1.3px] text-[#71829B]">
+              Preferences
+            </p>
+
+            <nav>
+              <button
+                type="button"
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium text-[#34445F] transition hover:bg-[#F0F5FC] hover:text-[#0759B5]"
+              >
+                <FiSettings size={18} />
+                Settings
+              </button>
             </nav>
           </>
         )}
       </div>
 
       {/* Bottom section */}
-      <div className="shrink-0 border-t border-[#3A3A3A] px-4 py-4">
+      <div className="shrink-0 border-t border-[#E3EAF3] px-4 py-4">
+
+        <button
+          type="button"
+          className="mb-4 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium text-[#34445F] transition hover:bg-[#F0F5FC]"
+        >
+          <FiHelpCircle size={19} />
+          Help & Support
+        </button>
 
         {isAuthenticated ? (
-          <div className="flex items-center gap-2 rounded-xl border border-[#D1D1D1] bg-[#FFFFFF] p-2">
+          <div className="flex items-center gap-2 rounded-xl border border-[#E3EAF3] bg-[#F7FAFE] p-2">
 
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#141619] text-sm font-bold text-white">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1768F2] text-sm font-bold text-white">
               {user?.name?.charAt(0)?.toUpperCase() || "U"}
             </div>
 
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-bold text-[#141619]">
+              <p className="truncate text-xs font-bold text-[#182541]">
                 {user?.name || "User"}
               </p>
-              <p className="text-[10px] capitalize text-[#141619]">
+              <p className="text-[10px] capitalize text-[#71809A]">
                 {user?.role || "Customer"}
               </p>
             </div>
@@ -134,7 +161,7 @@ const Sidebar = () => {
               type="button"
               onClick={handleLogout}
               title="Logout"
-              className="cursor-pointer rounded-md p-2 text-[#141619] transition hover:bg-[#D1D1D1] hover:text-white"
+              className="cursor-pointer rounded-md p-2 text-[#71809A] transition hover:bg-red-50 hover:text-red-600"
             >
               <FiLogOut size={16} />
             </button>
@@ -144,14 +171,14 @@ const Sidebar = () => {
           <div className="flex gap-2">
             <Link
               to="/login"
-              className="flex-1 rounded-lg bg-[#141619] py-2 text-center text-xs font-semibold text-white hover:bg-[#D1D1D1] hover:text-white"
+              className="flex-1 rounded-lg bg-[#0759B5] py-2 text-center text-xs font-semibold text-white hover:bg-[#064A96]"
             >
               Login
             </Link>
 
             <Link
               to="/register"
-              className="flex-1 rounded-lg border border-[#D1D1D1] py-2 text-center text-xs font-semibold text-white hover:bg-[#D1D1D1] hover:text-white"
+              className="flex-1 rounded-lg border border-[#E0EAF5] py-2 text-center text-xs font-semibold text-[#0759B5] hover:bg-[#F0F5FC]"
             >
               Register
             </Link>

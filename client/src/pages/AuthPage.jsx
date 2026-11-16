@@ -121,11 +121,11 @@ const AuthPage = ({ initialTab = "login" }) => {
   };
 
   const inputClass =
-    "h-9 w-full rounded-lg border border-[#D1D1D1] bg-[#FFFFFF] pl-9 pr-9 text-[11px] text-[#141619] outline-none transition placeholder:text-[#141619] focus:border-[#141619] focus:bg-white";
+    "h-9 w-full rounded-lg border border-[#e5edf7] bg-[#f9fbff] pl-9 pr-9 text-[11px] text-[#263653] outline-none transition placeholder:text-[#8191ad] focus:border-blue-400 focus:bg-white";
 
   return (
-    <main className="relative flex min-h-[calc(100vh-60px)] items-center justify-center overflow-hidden bg-gradient-to-br from-[#FFFFFF] via-[#FFFFFF] to-[#FFFFFF] px-3 py-5">
-      <div className="pointer-events-none absolute -bottom-16 -left-12 h-40 w-40 rounded-full bg-[#FFFFFF]/40 blur-3xl" />
+    <main className="relative flex min-h-[calc(100vh-60px)] items-center justify-center overflow-hidden bg-gradient-to-br from-[#f1f6fc] via-[#e9f2fc] to-[#f8fbff] px-3 py-5">
+      <div className="pointer-events-none absolute -bottom-16 -left-12 h-40 w-40 rounded-full bg-blue-300/40 blur-3xl" />
       <div className="pointer-events-none absolute -right-12 -top-16 h-40 w-40 rounded-full bg-sky-200/50 blur-3xl" />
 
       <section className="relative w-full max-w-[320px]">
@@ -136,8 +136,8 @@ const AuthPage = ({ initialTab = "login" }) => {
             onClick={() => handleTabChange("login")}
             className={`border-b-2 text-[11px] font-semibold transition ${
               isLogin
-                ? "border-[#141619] bg-white text-[#141619]"
-                : "border-transparent text-[#141619] hover:bg-[#F3F3F3]/70"
+                ? "border-blue-600 bg-white text-[#17233f]"
+                : "border-transparent text-[#52627e] hover:bg-white/70"
             }`}
           >
             Login
@@ -148,8 +148,8 @@ const AuthPage = ({ initialTab = "login" }) => {
             onClick={() => handleTabChange("register")}
             className={`border-b-2 text-[11px] font-semibold transition ${
               !isLogin
-                ? "border-[#141619] bg-white text-[#141619]"
-                : "border-transparent text-[#141619] hover:bg-[#F3F3F3]/70"
+                ? "border-blue-600 bg-white text-[#17233f]"
+                : "border-transparent text-[#52627e] hover:bg-white/70"
             }`}
           >
             Register
@@ -159,11 +159,11 @@ const AuthPage = ({ initialTab = "login" }) => {
         {/* Compact authentication card*/}
         <div className="rounded-xl border border-white/80 bg-white px-4 py-4 shadow-[0_12px_35px_rgba(63,95,140,0.12)]">
           <div className="mb-3 text-center">
-            <h1 className="text-[18px] font-bold tracking-tight text-[#141619]">
+            <h1 className="text-[18px] font-bold tracking-tight text-[#111d37]">
               {isLogin ? "Welcome Back" : "Create Account"}
             </h1>
 
-            <p className="mt-1 text-[10px] text-[#141619]">
+            <p className="mt-1 text-[10px] text-[#71819f]">
               {isLogin
                 ? "Login to continue to QueueLess"
                 : "Register to get started with QueueLess"}
@@ -173,7 +173,7 @@ const AuthPage = ({ initialTab = "login" }) => {
           <form onSubmit={handleSubmit} className="space-y-2">
             {!isLogin && (
               <div className="relative">
-                <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-[11px] text-[#141619]" />
+                <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-[11px] text-[#435776]" />
                 <input
                   type="text"
                   name="name"
@@ -188,7 +188,7 @@ const AuthPage = ({ initialTab = "login" }) => {
             )}
 
             <div className="relative">
-              <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-[11px] text-[#141619]" />
+              <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-[11px] text-[#435776]" />
               <input
                 type="email"
                 name="email"
@@ -202,7 +202,7 @@ const AuthPage = ({ initialTab = "login" }) => {
             </div>
 
             <div className="relative">
-              <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-[11px] text-[#141619]" />
+              <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-[11px] text-[#435776]" />
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
@@ -219,7 +219,7 @@ const AuthPage = ({ initialTab = "login" }) => {
                 type="button"
                 onClick={() => setShowPassword((value) => !value)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-[#141619]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-[#263653]"
               >
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
@@ -227,7 +227,7 @@ const AuthPage = ({ initialTab = "login" }) => {
 
             {!isLogin && (
               <div className="relative">
-                <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-[11px] text-[#141619]" />
+                <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-[11px] text-[#435776]" />
                 <input
                   type={showConfirmPassword ? "text" : "password"}
                   name="confirmPassword"
@@ -250,7 +250,7 @@ const AuthPage = ({ initialTab = "login" }) => {
                       ? "Hide confirm password"
                       : "Show confirm password"
                   }
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-[#141619]"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-[#263653]"
                 >
                   {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                 </button>
@@ -259,14 +259,14 @@ const AuthPage = ({ initialTab = "login" }) => {
 
             {isLogin && (
               <div className="flex items-center justify-between gap-2 py-0.5 text-[9px]">
-                <label className="flex cursor-pointer items-center gap-1.5 text-[#141619]">
+                <label className="flex cursor-pointer items-center gap-1.5 text-[#33435f]">
                   <input
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(event) =>
                       setRememberMe(event.target.checked)
                     }
-                    className="h-3 w-3 accent-[#141619]"
+                    className="h-3 w-3 accent-blue-600"
                   />
                   Remember me
                 </label>
@@ -278,7 +278,7 @@ const AuthPage = ({ initialTab = "login" }) => {
                       "Password reset is not configured yet. Please contact your administrator."
                     )
                   }
-                  className="font-semibold text-[#141619] hover:text-[#141619]"
+                  className="font-semibold text-blue-600 hover:text-blue-800"
                 >
                   Forgot password?
                 </button>
@@ -286,13 +286,13 @@ const AuthPage = ({ initialTab = "login" }) => {
             )}
 
             {error && (
-              <p role="alert" className="text-[10px] text-[#141619]">
+              <p role="alert" className="text-[10px] text-red-600">
                 {error}
               </p>
             )}
 
             {message && (
-              <p role="status" className="text-[10px] text-[#141619]">
+              <p role="status" className="text-[10px] text-green-700">
                 {message}
               </p>
             )}
@@ -300,7 +300,7 @@ const AuthPage = ({ initialTab = "login" }) => {
             <button
               type="submit"
               disabled={loading}
-              className="h-9 w-full rounded-lg bg-[#141619] text-[11px] font-semibold text-white shadow-sm transition hover:bg-[#141619] disabled:cursor-not-allowed disabled:opacity-60"
+              className="h-9 w-full rounded-lg bg-[#1769ee] text-[11px] font-semibold text-white shadow-sm transition hover:bg-[#125bd7] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading
                 ? isLogin
@@ -313,9 +313,9 @@ const AuthPage = ({ initialTab = "login" }) => {
           </form>
 
           <div className="my-3 flex items-center gap-3">
-            <div className="h-px flex-1 bg-[#FFFFFF]" />
-            <span className="text-[9px] text-[#141619]">or</span>
-            <div className="h-px flex-1 bg-[#FFFFFF]" />
+            <div className="h-px flex-1 bg-[#e9eef6]" />
+            <span className="text-[9px] text-[#657590]">or</span>
+            <div className="h-px flex-1 bg-[#e9eef6]" />
           </div>
 
           <button
@@ -323,20 +323,20 @@ const AuthPage = ({ initialTab = "login" }) => {
             onClick={() =>
               setError("Google sign-in is not configured yet.")
             }
-            className="flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-[#D1D1D1] bg-white text-[10px] font-semibold text-[#141619] transition hover:bg-[#F3F3F3]"
+            className="flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-[#e4ebf5] bg-white text-[10px] font-semibold text-[#17233f] transition hover:bg-[#f7faff]"
           >
-            <FaGoogle className="text-[11px] text-[#141619]" />
+            <FaGoogle className="text-[11px] text-[#4285F4]" />
             Continue with Google
           </button>
 
-          <p className="mt-3 text-center text-[9px] text-[#141619]">
+          <p className="mt-3 text-center text-[9px] text-[#75839b]">
             {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
             <button
               type="button"
               onClick={() =>
                 handleTabChange(isLogin ? "register" : "login")
               }
-              className="font-semibold text-[#141619] hover:underline"
+              className="font-semibold text-blue-600 hover:underline"
             >
               {isLogin ? "Register" : "Login"}
             </button>
