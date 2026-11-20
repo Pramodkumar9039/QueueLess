@@ -113,10 +113,6 @@ const Sidebar = () => {
 
             <div className="my-4 border-t border-[#E3EAF3]" />
 
-            <p className="mb-3 px-2 text-[10px] font-bold uppercase tracking-[1.3px] text-[#71829B]">
-              Preferences
-            </p>
-
             <nav>
               <button
                 type="button"
