@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "jest --runInBand",
-    "start": "nodemon server.js"
+    "start": "nodemon server.js",
+    "socket-demo": "node socket-demo/server.js"
   },
   "keywords": [],
   "author": "",
@@ -19,7 +20,8 @@
     "express-rate-limit": "^8.7.3",
     "express-validator": "^7.3.2",
     "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.11.1"
+    "mongoose": "^9.11.1",
+    "socket.io": "^4.8.4"
   },
   "devDependencies": {
     "jest": "^30.5.2",

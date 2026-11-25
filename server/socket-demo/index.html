@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>QueueLess Socket.IO Demo</title>
+    <style>
+      body { font: 16px system-ui, sans-serif; margin: 2rem auto; max-width: 36rem; padding: 0 1rem; }
+      #messages { border: 1px solid #ccc; min-height: 12rem; padding: 1rem; }
+      form { display: flex; gap: 0.5rem; margin-top: 1rem; }
+      input { flex: 1; padding: 0.5rem; }
+      button { padding: 0.5rem 1rem; }
+    </style>
+  </head>
+  <body>
+    <h1>Socket.IO demo</h1>
+    <p id="status">Connecting...</p>
+    <ul id="messages" aria-live="polite"></ul>
+    <form id="message-form">
+      <input id="message-input" maxlength="200" placeholder="Type a message" required>
+      <button>Send</button>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+      const status = document.getElementById("status");
+      const messages = document.getElementById("messages");
+      const form = document.getElementById("message-form");
+      const input = document.getElementById("message-input");
+
+      socket.on("connect", () => {
+        status.textContent = "Connected. Open another tab to try live messages.";
+      });
+
+      socket.on("disconnect", () => {
+        status.textContent = "Disconnected. Trying to reconnect...";
+      });
+
+      socket.on("demo:message", ({ from, text }) => {
+        const item = document.createElement("li");
+        item.textContent = `${from}: ${text}`;
+        messages.appendChild(item);
+      });
+
+      socket.on("demo:error", (message) => {
+        status.textContent = message;
+      });
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        socket.emit("demo:message", input.value);
+        input.value = "";
+      });
+    </script>
+  </body>
+</html>
