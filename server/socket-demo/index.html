@@ -49,7 +49,7 @@
 
       form.addEventListener("submit", (event) => {
         event.preventDefault();
-        socket.emit("demo:message", input.value);
+        socket.emit("demo:message", input.value.trim());
         input.value = "";
       });
     </script>
