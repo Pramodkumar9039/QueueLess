@@ -1,7 +1,13 @@
 require('dotenv').config();
 
+if (!process.env.JWT_SECRET?.trim()) {
+    throw new Error('JWT_SECRET must be configured before starting the server');
+}
+
+const { createServer } = require('node:http');
 const express = require('express');
 const connectDB = require('./config/db.js');
+const { setupSocketServer } = require('./socket');
 const userRoutes = require('./routes/userRoutes.js');
 const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
@@ -48,10 +54,12 @@ app.get('/', (req, res) => {
 app.use(notFoundHandler);
 app.use(errorHandler);
 
+const httpServer = createServer(app);
 const PORT = process.env.PORT || 5000;
 
 connectDB().then(() => {
-    app.listen(PORT , () => {
+    setupSocketServer(httpServer, app);
+    httpServer.listen(PORT , () => {
         console.log(`Server is running on PORT No : ${PORT}`);
     })
 }).catch((error) => {
