@@ -1,33 +1,7 @@
 const mongoose = require("mongoose");
 const Queue = require("../models/Queue");
 const Service = require("../models/Service");
-const Organization = require("../models/Organization");
-
-// Check whether the logged-in user can manage this service
-const canManageService = async (service, user) => {
-  const organization = await Organization.findOne({
-    _id: service.organization,
-    isActive: true,
-  }).select("owner staff");
-
-  if (!organization) {
-    return false;
-  }
-
-  // Admins can manage only organizations they own
-  if (user.role === "admin") {
-    return organization.owner.toString() === user.userId;
-  }
-
-  // Staff can manage only organizations they are assigned to
-  if (user.role === "staff") {
-    return organization.staff.some(
-      (staffId) => staffId.toString() === user.userId
-    );
-  }
-
-  return false;
-};
+const { canManageService } = require("../utils/authorization");
 
 // Get or create today's queue for a service (public)
 const getOrCreateQueue = async (req, res) => {

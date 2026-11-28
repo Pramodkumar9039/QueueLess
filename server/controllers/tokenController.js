@@ -2,37 +2,7 @@
 const mongoose = require("mongoose");
 const Token = require("../models/Token");
 const Queue = require("../models/Queue");
-const Service = require("../models/Service");
-const Organization = require("../models/Organization");
-
-// Check whether a staff member or admin can manage a queue.
-const canManageQueue = async (queue, user) => {
-  const service = await Service.findOne({
-    _id: queue.service,
-    isActive: true,
-  }).select("organization");
-
-  if (!service) return false;
-
-  const organization = await Organization.findOne({
-    _id: service.organization,
-    isActive: true,
-  }).select("owner staff");
-
-  if (!organization) return false;
-
-  if (user.role === "admin") {
-    return organization.owner.toString() === user.userId;
-  }
-
-  if (user.role === "staff") {
-    return organization.staff.some(
-      (staffId) => staffId.toString() === user.userId
-    );
-  }
-
-  return false;
-};
+const { canManageQueue } = require("../utils/authorization");
 
 // Populate queue, service and organization details.
 const populateTokenDetails = (query) =>
